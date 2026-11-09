@@ -43,9 +43,13 @@ export default function ScrollStoryline() {
     let cachedDocHeight = 0;
     let ticking = false;
     let lastPercent = -1;
+    let rafId = 0;
+    let scrollY = window.scrollY || 0;
+    let vh = window.innerHeight;
+    let visible = window.innerWidth >= 1280;
 
     const measureOffsets = () => {
-      if (window.innerWidth < 1280) return;
+      if (!visible) return;
       const scrollY = window.scrollY || 0;
       cachedOffsets = [];
       for (const id of SECTION_IDS) {
@@ -59,11 +63,9 @@ export default function ScrollStoryline() {
 
     const pick = () => {
       ticking = false;
-      if (window.innerWidth < 1280) return;
+      if (!visible) return;
       if (cachedOffsets.length === 0) measureOffsets();
 
-      const scrollY = window.scrollY || 0;
-      const vh = window.innerHeight;
       const maxScroll = Math.max(1, cachedDocHeight - vh);
       const p = Math.min(100, Math.max(0, Math.round((scrollY / maxScroll) * 100)));
       if (p !== lastPercent) {
@@ -92,14 +94,17 @@ export default function ScrollStoryline() {
     };
 
     const onScroll = () => {
-      if (window.innerWidth < 1280) return;
+      if (!visible) return;
+      scrollY = window.scrollY || 0;
       if (!ticking) {
         ticking = true;
-        window.requestAnimationFrame(pick);
+        rafId = window.requestAnimationFrame(pick);
       }
     };
 
     const onResize = () => {
+      visible = window.innerWidth >= 1280;
+      vh = window.innerHeight;
       measureOffsets();
       onScroll();
     };
@@ -110,7 +115,7 @@ export default function ScrollStoryline() {
     let ro = null;
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(() => {
-        if (window.innerWidth >= 1280) {
+        if (visible) {
           measureOffsets();
           onScroll();
         }
@@ -123,6 +128,7 @@ export default function ScrollStoryline() {
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
+      window.cancelAnimationFrame(rafId);
       if (ro) ro.disconnect();
     };
   }, []);

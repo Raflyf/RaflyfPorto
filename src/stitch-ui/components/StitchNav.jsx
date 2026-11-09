@@ -65,6 +65,9 @@ export default function StitchNav() {
     let cachedOffsets = [];
     let cachedDocHeight = 0;
     let ticking = false;
+    let rafId = 0;
+    let scrollY = window.scrollY || 0;
+    let vh = window.innerHeight;
 
     const measureOffsets = () => {
       const scrollY = window.scrollY || 0;
@@ -81,8 +84,6 @@ export default function StitchNav() {
     const pick = () => {
       ticking = false;
       if (cachedOffsets.length === 0) measureOffsets();
-      const scrollY = window.scrollY || 0;
-      const vh = window.innerHeight;
       const line = scrollY + vh * 0.4;
 
       let current = ids[0];
@@ -100,13 +101,15 @@ export default function StitchNav() {
     };
 
     const onScroll = () => {
+      scrollY = window.scrollY || 0;
       if (!ticking) {
         ticking = true;
-        window.requestAnimationFrame(pick);
+        rafId = window.requestAnimationFrame(pick);
       }
     };
 
     const onResize = () => {
+      vh = window.innerHeight;
       measureOffsets();
       onScroll();
     };
@@ -128,6 +131,7 @@ export default function StitchNav() {
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
+      window.cancelAnimationFrame(rafId);
       if (ro) ro.disconnect();
     };
   }, []);

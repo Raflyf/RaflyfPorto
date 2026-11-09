@@ -377,8 +377,25 @@ function BackToTopButton({ t }) {
   );
 }
 
-export default function App() {
+// Keep per-keystroke terminal updates outside the page's render tree.
+function TerminalLauncher({ t }) {
   const { setIsTerminalPopupOpen } = useTerminal();
+  return (
+    <button
+      onClick={() => {
+        telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
+        setIsTerminalPopupOpen(true);
+      }}
+      className="w-12 h-12 rounded-full stitch-floating-fab-terminal flex items-center justify-center cursor-pointer select-none"
+      aria-label={t('nav.openTerminal')}
+      title={t('nav.openTerminal')}
+    >
+      <Terminal className="w-5 h-5" />
+    </button>
+  );
+}
+
+export default function App() {
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -552,17 +569,7 @@ export default function App() {
           >
             <BackToTopButton t={t} />
             
-            <button
-              onClick={() => {
-                telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
-                setIsTerminalPopupOpen(true);
-              }}
-              className="w-12 h-12 rounded-full stitch-floating-fab-terminal flex items-center justify-center cursor-pointer select-none"
-              aria-label={t('nav.openTerminal')}
-              title={t('nav.openTerminal')}
-            >
-              <Terminal className="w-5 h-5" />
-            </button>
+            <TerminalLauncher t={t} />
           </div>
         )}
       </div>
