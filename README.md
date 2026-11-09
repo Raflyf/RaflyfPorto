@@ -1,4 +1,4 @@
-# Portofolio Profesional & AI Developer Lab — Rafly Firmansyah
+# Portofolio Profesional & AI Developer Lab - Rafly Firmansyah
 
 Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** — Sarjana Komputer (S1 Informatika, Universitas Bina Sarana Informatika), Analis Program Terstandar BNSP, dan Software Engineer yang berfokus pada riset *Natural Language Processing* (NLP), *Machine Learning*, arsitektur backend, dan rekayasa web modern.
 
@@ -17,7 +17,7 @@ Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, **Fram
 
 ### Dashboard Admin
 - **Autentikasi Berlapis:** Proteksi Master PIN dengan hashing kriptografis, penguncian *brute-force*, dan token sesi yang kedaluwarsa otomatis.
-- **Data Privat:** Telemetri dan memori hanya dapat dibaca melalui fungsi serverless terverifikasi — akses publik ke tabel dinonaktifkan sepenuhnya via RLS.
+- **Data Privat:** Telemetri dan memori hanya dapat dibaca melalui fungsi serverless terverifikasi akses publik ke tabel dinonaktifkan sepenuhnya via RLS.
 - **Visualisasi Analitik:** Statistik kunjungan, tipe perangkat, interaksi kueri, dan riwayat perintah dalam grafik interaktif.
 - **Ekspor Log Terproteksi:** Unduh log aktivitas dalam format JSON/CSV dengan sanitasi karakter untuk mencegah *formula injection*.
 
@@ -88,7 +88,7 @@ npm run preview
 | Nama | Deskripsi |
 | :--- | :--- |
 | `SUPABASE_URL` | URL endpoint Supabase untuk fungsi serverless. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Kunci privat utama** — hanya digunakan fungsi serverless. Dilarang diekspos ke client. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Kunci privat utama** hanya digunakan fungsi serverless. Dilarang diekspos ke client. |
 | `ALLOWED_ORIGIN` | Domain resmi yang diizinkan dalam kebijakan CORS. |
 
 > Variabel tambahan untuk integrasi AI dan konfigurasi internal didokumentasikan di `.env.example`.
