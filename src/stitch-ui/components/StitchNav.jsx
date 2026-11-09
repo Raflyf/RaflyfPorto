@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import GithubIcon from './GithubIcon.jsx';
 import { telemetry } from '../../lib/telemetry';
+import { subscribeScrollSpy } from '../../lib/scroll-spy.js';
 
 const NAV_ITEMS = [
   { id: 'about', labelKey: 'about', icon: User },
@@ -58,83 +59,9 @@ export default function StitchNav() {
     }
   };
 
-  // Synchronize active nav highlight with viewport scroll using cached section offsets
-  // (zero getBoundingClientRect / scrollHeight layout reads during scroll frames).
-  useEffect(() => {
-    const ids = ['hero', ...NAV_ITEMS.map(i => i.id)];
-    let cachedOffsets = [];
-    let cachedDocHeight = 0;
-    let ticking = false;
-    let rafId = 0;
-    let scrollY = window.scrollY || 0;
-    let vh = window.innerHeight;
-
-    const measureOffsets = () => {
-      const scrollY = window.scrollY || 0;
-      cachedOffsets = [];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el) {
-          cachedOffsets.push({ id, top: el.getBoundingClientRect().top + scrollY });
-        }
-      }
-      cachedDocHeight = document.documentElement.scrollHeight;
-    };
-
-    const pick = () => {
-      ticking = false;
-      if (cachedOffsets.length === 0) measureOffsets();
-      const line = scrollY + vh * 0.4;
-
-      let current = ids[0];
-      for (let i = 0; i < cachedOffsets.length; i++) {
-        if (cachedOffsets[i].top <= line) {
-          current = cachedOffsets[i].id;
-        } else {
-          break;
-        }
-      }
-      if (vh + scrollY >= cachedDocHeight - 4) {
-        current = ids[ids.length - 1];
-      }
-      setActiveSection(prev => (prev !== current ? current : prev));
-    };
-
-    const onScroll = () => {
-      scrollY = window.scrollY || 0;
-      if (!ticking) {
-        ticking = true;
-        rafId = window.requestAnimationFrame(pick);
-      }
-    };
-
-    const onResize = () => {
-      vh = window.innerHeight;
-      measureOffsets();
-      onScroll();
-    };
-
-    measureOffsets();
-    pick();
-
-    let ro = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => {
-        measureOffsets();
-        onScroll();
-      });
-      ro.observe(document.body);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      window.cancelAnimationFrame(rafId);
-      if (ro) ro.disconnect();
-    };
-  }, []);
+  useEffect(() => subscribeScrollSpy(({ activeSection: current }) => {
+    setActiveSection(prev => (prev !== current ? current : prev));
+  }), []);
 
   // Accessibility: close mobile menu on Escape key press or window resize
   useEffect(() => {

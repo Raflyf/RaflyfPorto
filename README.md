@@ -122,6 +122,28 @@ Panduan Google: https://developers.google.com/search/docs/crawling-indexing/site
 
 Teks UI, metadata, dan dokumentasi menggunakan tanda hubung biasa atau titik dua, bukan em dash. Terminal menormalkan em dash pada node teks Markdown setelah parsing, termasuk entitas HTML dan pesan lama yang ditampilkan kembali. URL, contoh kode, dan data riwayat tersimpan tidak ditulis ulang. Jalankan `node --test tests/punctuation.test.mjs` untuk memeriksa regresi.
 
+## Optimasi render internal
+
+Baseline `d8850a4` dibandingkan dengan memo transcript terminal dan satu pemilik scroll-spy bersama. DOM/class, CSS, motion, durasi reveal, typewriter 16 ms, Lenis, serta cadence penyimpanan tetap. Baris terminal digunakan ulang saat input atau kontrol berubah; pesan yang sedang diketik tetap diperbarui. Handler rollback memakai render terakhir yang sudah commit agar pesan dan lampiran tidak kedaluwarsa.
+
+Benchmark lokal: Chrome 156.0.8078.81, viewport 1440x900, CPU 4x, tiga pasangan bergantian, konfigurasi `VITE_*` setara, tanpa trace. Riwayat berisi 41 pesan, 64 karakter input, scroll 9500 px turun/naik pada 1800 px/detik. Respons AI memakai fixture lokal, bukan latensi provider. Nilai tabel adalah median tiga run.
+
+| Skenario | Baseline | Kandidat |
+| --- | ---: | ---: |
+| JavaScript saat mengetik | 1168.3 ms | 490.2 ms |
+| Pembangunan ulang array transcript saat mengetik | 65 | 0 |
+| Durasi skenario mengetik | 2979.0 ms | 2257.5 ms |
+| Scroll biasa: JavaScript / p95 frame | 1854.2 / 62.5 ms | 1850.7 / 62.4 ms |
+| Scroll + typewriter: JavaScript / p95 frame | 6398.1 / 180.7 ms | 6266.6 / 187.4 ms |
+
+Pengurangan kerja saat mengetik sekitar 58%. Durasi skenario bukan INP. Scroll biasa dan scroll saat AI mengetik belum menunjukkan peningkatan kelancaran yang konsisten. Shared scroll menghapus duplikasi listener/RAF serta pembacaan posisi; observasi ukuran delapan section menjaga cache setelah filter, resize, atau pergantian bahasa. Section masih dipasang sinkron, bukan lazy-mounted.
+
+Verifikasi: 53 tes lulus; CSS build identik byte; DOM transcript fixture identik. Pemeriksaan browser desktop/tablet/mobile membandingkan geometri section, material kaca, navigasi, filter, bahasa, history restore, input, popup/Escape, rollback, typewriter, checkpoint, chat baru, dan remount route. Screenshot diperiksa dengan animasi tetap aktif; fase marquee dapat berbeda, sehingga bukan klaim piksel identik.
+
+Sampel aktivasi tanpa throttle: terminal siap 466-554 ms pada baseline dan 483-501 ms pada kandidat; popup terdeteksi 17-33 ms dan 28-52 ms. Satu sampel per viewport tidak membuktikan perubahan latensi. Tidak ada lazy load, penundaan aktivasi, atau perubahan timer. Backend/latensi provider tidak diukur.
+
+Jalankan `npm run build` dan `npm test`. Runner serta bukti lokal: [benchmark berpasangan](<scratch/perf-followup/paired.mjs>), [hasil final](<scratch/perf-followup/paired-matched-metrics.json>), [pemeriksaan UI](<scratch/perf-followup/ui-check.mjs>), dan [sampel aktivasi](<scratch/perf-followup/visual-activation.json>). Benchmark lama `paired-v1` tidak dipakai karena konfigurasi build belum setara.
+
 ## Lisensi
 
 Proyek ini didistribusikan di bawah lisensi [MIT License](https://opensource.org/licenses/MIT).

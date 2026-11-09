@@ -1238,6 +1238,14 @@ export default function TerminalAI({ onClose } = {}) {
     document.body.removeChild(element);
   };
 
+  // Cached rows must call handlers from the latest committed render.
+  const transcriptHandlers = useRef(null);
+  React.useLayoutEffect(() => {
+    transcriptHandlers.current = { rollbackToMessage, handleDownload };
+  });
+  const hasUntimedMessages = React.useMemo(() => messages.some(msg => msg.role !== 'system' && !msg.time), [messages]);
+  const fallbackTime = hasUntimedMessages ? getCurrentTime() : null;
+
   const terminalContent = (
     <div 
       className={cn(
@@ -1405,7 +1413,7 @@ export default function TerminalAI({ onClose } = {}) {
 
       {/* Terminal Body (Messages) */}
       <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3 sm:p-4 space-y-3 scroll-smooth bg-transparent">
-        {messages.map((msg, idx) => (
+        {React.useMemo(() => messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-1.5", msg.role === 'user' ? "items-end" : "items-start")}>
             
             {msg.role === 'user' ? (
@@ -1413,13 +1421,13 @@ export default function TerminalAI({ onClose } = {}) {
               <div className="flex flex-col items-end max-w-[92%] sm:max-w-3/4 group">
                 <div className="flex items-center gap-2 mb-1.5">
                   <button
-                    onClick={() => rollbackToMessage(idx)}
+                    onClick={() => transcriptHandlers.current.rollbackToMessage(idx)}
                     title="Rollback percakapan ke sebelum pesan ini"
                     className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] text-zinc-400 hover:text-amber-300 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                   >
                     <RotateCcw className="w-2.5 h-2.5" /> <span className="hidden sm:inline">Rollback</span>
                   </button>
-                  <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">{msg.time || getCurrentTime()}</span>
+                  <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">{msg.time || fallbackTime}</span>
                   <span className="text-xs font-semibold text-emerald-400">You (Pengunjung)</span>
                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
                     <User className="w-3 h-3 text-emerald-400" />
@@ -1474,11 +1482,11 @@ export default function TerminalAI({ onClose } = {}) {
                     {!msg.isStatic && <span className="text-zinc-500 mx-1 uppercase">[Effort: {msg.effort || effort}]</span>}
                   </span>
                   {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">{msg.providerName || "(Ollama Cloud SOTA Engine)"}</span>}
-                  <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || getCurrentTime()}</span>
+                  <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || fallbackTime}</span>
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
                     <button 
-                      onClick={() => rollbackToMessage(idx)}
+                      onClick={() => transcriptHandlers.current.rollbackToMessage(idx)}
                       title="Kembalikan pertanyaan ke kotak ketikan dan hapus jawaban ini (Rollback)"
                       className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                     >
@@ -1491,7 +1499,7 @@ export default function TerminalAI({ onClose } = {}) {
                       <Copy className="w-3 h-3" /> <span className="hidden sm:inline">Salin</span>
                     </button>
                     <button 
-                      onClick={() => handleDownload(msg.content)}
+                      onClick={() => transcriptHandlers.current.handleDownload(msg.content)}
                       className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                     >
                       <Download className="w-3 h-3" /> <span className="hidden sm:inline">Unduh .md</span>
@@ -1538,7 +1546,7 @@ export default function TerminalAI({ onClose } = {}) {
               </div>
             )}
           </div>
-        ))}
+        )), [messages, effort, fallbackTime])}
         {isLoading && (
           <div className="flex flex-col items-start w-full my-2 animate-in fade-in duration-200">
              <div className="flex items-center gap-2.5 w-full">

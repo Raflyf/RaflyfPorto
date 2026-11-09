@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
-
-const SECTION_IDS = [
-  'hero',
-  'about',
-  'skills',
-  'projects',
-  'certificates',
-  'timeline',
-  'lab',
-  'contact',
-];
+import { SECTION_IDS, subscribeScrollSpy } from '../../lib/scroll-spy.js';
 
 export default function ScrollStoryline() {
   const { t } = useLanguage();
@@ -37,100 +27,17 @@ export default function ScrollStoryline() {
     prevSectionRef.current = activeSection;
   }, [activeSection]);
 
-  // Unified scroll spy + percentage calculation (active only on xl >= 1280px where sidebar is visible)
   useEffect(() => {
-    let cachedOffsets = [];
-    let cachedDocHeight = 0;
-    let ticking = false;
     let lastPercent = -1;
-    let rafId = 0;
-    let scrollY = window.scrollY || 0;
-    let vh = window.innerHeight;
-    let visible = window.innerWidth >= 1280;
-
-    const measureOffsets = () => {
-      if (!visible) return;
-      const scrollY = window.scrollY || 0;
-      cachedOffsets = [];
-      for (const id of SECTION_IDS) {
-        const el = document.getElementById(id);
-        if (el) {
-          cachedOffsets.push({ id, top: el.getBoundingClientRect().top + scrollY });
-        }
+    return subscribeScrollSpy(({ activeSection, percent, scrollY, width }) => {
+      if (width < 1280) return;
+      if (percent !== lastPercent) {
+        lastPercent = percent;
+        setPercent(percent);
       }
-      cachedDocHeight = document.documentElement.scrollHeight;
-    };
-
-    const pick = () => {
-      ticking = false;
-      if (!visible) return;
-      if (cachedOffsets.length === 0) measureOffsets();
-
-      const maxScroll = Math.max(1, cachedDocHeight - vh);
-      const p = Math.min(100, Math.max(0, Math.round((scrollY / maxScroll) * 100)));
-      if (p !== lastPercent) {
-        lastPercent = p;
-        setPercent(p);
-      }
-
-      if (scrollY < 100) {
-        setActiveSection(prev => (prev !== 'hero' ? 'hero' : prev));
-        return;
-      }
-
-      const line = scrollY + vh * 0.4;
-      let current = SECTION_IDS[0];
-      for (let i = 0; i < cachedOffsets.length; i++) {
-        if (cachedOffsets[i].top <= line) {
-          current = cachedOffsets[i].id;
-        } else {
-          break;
-        }
-      }
-      if (vh + scrollY >= cachedDocHeight - 4) {
-        current = SECTION_IDS[SECTION_IDS.length - 1];
-      }
+      const current = scrollY < 100 ? 'hero' : activeSection;
       setActiveSection(prev => (prev !== current ? current : prev));
-    };
-
-    const onScroll = () => {
-      if (!visible) return;
-      scrollY = window.scrollY || 0;
-      if (!ticking) {
-        ticking = true;
-        rafId = window.requestAnimationFrame(pick);
-      }
-    };
-
-    const onResize = () => {
-      visible = window.innerWidth >= 1280;
-      vh = window.innerHeight;
-      measureOffsets();
-      onScroll();
-    };
-
-    measureOffsets();
-    pick();
-
-    let ro = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => {
-        if (visible) {
-          measureOffsets();
-          onScroll();
-        }
-      });
-      ro.observe(document.body);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      window.cancelAnimationFrame(rafId);
-      if (ro) ro.disconnect();
-    };
+    });
   }, []);
 
   const scrollTo = (e, id) => {
