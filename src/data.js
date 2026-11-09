@@ -19,7 +19,7 @@ export const DEVELOPER_PROFILE_I18N = {
     email: "raflyfirmansyah02@gmail.com",
     whatsapp: "08991333323",
     whatsappUrl: "https://wa.me/628991333323",
-    repoUrl: "https://github.com/Raflyf/web-portofolio"
+    repoUrl: "https://github.com/Raflyf/RaflyfPorto"
   },
   en: {
     name: "Rafly Firmansyah",
@@ -34,7 +34,7 @@ export const DEVELOPER_PROFILE_I18N = {
     email: "raflyfirmansyah02@gmail.com",
     whatsapp: "08991333323",
     whatsappUrl: "https://wa.me/628991333323",
-    repoUrl: "https://github.com/Raflyf/web-portofolio"
+    repoUrl: "https://github.com/Raflyf/RaflyfPorto"
   }
 };
 
@@ -175,9 +175,69 @@ export const PROJECTS_DATA_I18N = {
         "Desain Liquid Glassmorphism, Horizon Scrollytelling, dan kepatuhan WCAG 2.2 AA"
       ],
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
-      githubUrl: "https://github.com/Raflyf/web-portofolio",
+      githubUrl: "https://github.com/Raflyf/RaflyfPorto",
       demoUrl: "https://raflyf.vercel.app/",
       stars: 2
+    },
+    {
+      id: "wallpaper-live",
+      title: "WallpaperLive",
+      category: "tools",
+      categoryLabel: "Aplikasi Desktop Windows",
+      badge: "Wallpaper Media Lokal",
+      description: "Aplikasi Windows native untuk menjadikan video, GIF, dan gambar lokal sebagai wallpaper. Mendukung pengaturan per layar, kontrol FPS, dan jeda otomatis saat aplikasi fullscreen atau dimaksimalkan.",
+      longDescription: "WallpaperLive memakai Rust, Win32, dan libmpv untuk memutar media lokal di desktop. Pengguna dapat mengatur wallpaper berbeda pada tiap layar, memilih media dari library thumbnail, serta mengatur FPS, penempatan, dan suara. Pemutaran dapat dijeda otomatis saat memakai baterai, sesi terkunci, atau aplikasi lain memenuhi layar. File media asli tetap tersimpan di lokasinya.",
+      keyFeatures: [
+        "Wallpaper video, GIF, dan gambar dari file lokal",
+        "Pengaturan wallpaper terpisah untuk setiap layar",
+        "Library thumbnail dengan pencarian dan filter folder",
+        "Kontrol FPS, penempatan Fill/Fit, dan suara",
+        "Jeda otomatis untuk fullscreen, baterai, dan sesi terkunci"
+      ],
+      techStack: ["Rust", "Win32", "libmpv", "D3D11"],
+      githubUrl: "https://github.com/Raflyf/WallpaperLive",
+      demoUrl: null,
+      stars: 1
+    },
+    {
+      id: "transparent-bar",
+      title: "TransparentBar",
+      category: "tools",
+      categoryLabel: "Utilitas Desktop Windows",
+      badge: "Taskbar Transparan",
+      description: "Utilitas Rust native yang membuat taskbar Windows 10 dan 11 transparan. Menyediakan connector gradasi yang mengikuti warna tepi jendela maximized, kontrol tray, dan startup opsional.",
+      longDescription: "TransparentBar berjalan di system tray dan menangani taskbar legacy maupun XAML pada Windows x64. Connector opsional mencocokkan warna tepi jendela yang dimaksimalkan, sementara menu tray menyediakan pengaturan startup dan pemeriksaan rilis GitHub. Memilih Exit memulihkan tampilan taskbar yang tersimpan. Dukungan bergantung pada versi Windows dan konfigurasi taskbar.",
+      keyFeatures: [
+        "Transparansi taskbar Windows 10 dan 11 x64",
+        "Connector gradasi mengikuti warna tepi jendela maximized",
+        "Menu tray native dan startup saat sign-in yang opsional",
+        "Pemeriksaan pembaruan melalui GitHub Releases",
+        "Pemulihan tampilan taskbar saat memilih Exit"
+      ],
+      techStack: ["Rust", "Win32", "Windows XAML", "Inno Setup"],
+      githubUrl: "https://github.com/Raflyf/TransparentBar",
+      demoUrl: null,
+      stars: 1
+    },
+    {
+      id: "livelydesk",
+      title: "LivelyDesk",
+      category: "web",
+      categoryLabel: "Portal Produk Web",
+      badge: "WallpaperLive & TransparentBar",
+      description: "Portal web untuk WallpaperLive dan TransparentBar dengan pratinjau produk, pilihan bahasa Indonesia/Inggris, tema terang/gelap, dan tautan unduhan dari rilis GitHub.",
+      longDescription: "LivelyDesk menyatukan informasi dua aplikasi desktop dalam situs React dan TypeScript. Pengunjung dapat menonton video demo, melihat screenshot aplikasi, membaca fitur, dan membuka unduhan yang mengikuti metadata rilis GitHub. Situs mendukung bahasa Indonesia dan Inggris, tema terang/gelap, serta smooth scrolling melalui Lenis.",
+      keyFeatures: [
+        "Video demo dan screenshot WallpaperLive serta TransparentBar",
+        "Pergantian bahasa Indonesia dan Inggris",
+        "Pilihan tema terang dan gelap",
+        "Versi dan tautan unduhan mengikuti rilis GitHub",
+        "Smooth scrolling dan kontrol visibilitas video"
+      ],
+      techStack: ["React 19", "TypeScript", "Vite", "Tailwind CSS", "Lenis"],
+      githubUrl: "https://github.com/Raflyf/LivelyDesk",
+      demoUrl: "https://livelydesk.vercel.app",
+      stars: 1
     }
   ],
   en: [
@@ -316,9 +376,69 @@ export const PROJECTS_DATA_I18N = {
         "Liquid Glassmorphism aesthetic, Horizon Scrollytelling, and WCAG 2.2 AA compliance"
       ],
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
-      githubUrl: "https://github.com/Raflyf/web-portofolio",
+      githubUrl: "https://github.com/Raflyf/RaflyfPorto",
       demoUrl: "https://raflyf.vercel.app/",
       stars: 2
+    },
+    {
+      id: "wallpaper-live",
+      title: "WallpaperLive",
+      category: "tools",
+      categoryLabel: "Windows Desktop App",
+      badge: "Local Media Wallpapers",
+      description: "Native Windows app that turns local videos, GIFs, and images into desktop wallpapers. Supports per-display assignments, FPS controls, and automatic pause for fullscreen or maximized apps.",
+      longDescription: "WallpaperLive uses Rust, Win32, and libmpv to play local media on the desktop. Users can assign different wallpapers to each display, choose media from a thumbnail library, and control FPS, placement, and sound. Playback can pause automatically on battery power, session lock, or when another app fills the screen. Original media files stay in their existing locations.",
+      keyFeatures: [
+        "Video, GIF, and image wallpapers from local files",
+        "Independent wallpaper assignments for each display",
+        "Thumbnail library with search and folder filtering",
+        "FPS, Fill/Fit placement, and sound controls",
+        "Automatic pause for fullscreen apps, battery power, and session lock"
+      ],
+      techStack: ["Rust", "Win32", "libmpv", "D3D11"],
+      githubUrl: "https://github.com/Raflyf/WallpaperLive",
+      demoUrl: null,
+      stars: 1
+    },
+    {
+      id: "transparent-bar",
+      title: "TransparentBar",
+      category: "tools",
+      categoryLabel: "Windows Desktop Utility",
+      badge: "Transparent Taskbar",
+      description: "Native Rust utility that makes the Windows 10 and 11 taskbar transparent. Includes a gradient connector matching the edge of maximized windows, tray controls, and optional startup.",
+      longDescription: "TransparentBar runs in the system tray and handles legacy and XAML taskbars on x64 Windows. Its optional connector matches the colors along the edge of maximized windows, while the tray menu provides startup settings and GitHub release checks. Choosing Exit restores the saved taskbar appearance. Support depends on the Windows version and taskbar configuration.",
+      keyFeatures: [
+        "Taskbar transparency on Windows 10 and 11 x64",
+        "Gradient connector matching maximized-window edge colors",
+        "Native tray menu and optional startup at sign-in",
+        "Update checks through GitHub Releases",
+        "Saved taskbar appearance restored when choosing Exit"
+      ],
+      techStack: ["Rust", "Win32", "Windows XAML", "Inno Setup"],
+      githubUrl: "https://github.com/Raflyf/TransparentBar",
+      demoUrl: null,
+      stars: 1
+    },
+    {
+      id: "livelydesk",
+      title: "LivelyDesk",
+      category: "web",
+      categoryLabel: "Web Product Portal",
+      badge: "WallpaperLive & TransparentBar",
+      description: "Web portal for WallpaperLive and TransparentBar with product previews, Indonesian/English language switching, light/dark themes, and downloads sourced from GitHub releases.",
+      longDescription: "LivelyDesk brings information about both desktop apps into a React and TypeScript website. Visitors can watch a demo video, view app screenshots, read features, and open downloads backed by GitHub release metadata. The site supports Indonesian and English, light/dark themes, and smooth scrolling through Lenis.",
+      keyFeatures: [
+        "Demo video and screenshots of WallpaperLive and TransparentBar",
+        "Indonesian and English language switching",
+        "Light and dark theme options",
+        "Versions and download links follow GitHub releases",
+        "Smooth scrolling and video visibility controls"
+      ],
+      techStack: ["React 19", "TypeScript", "Vite", "Tailwind CSS", "Lenis"],
+      githubUrl: "https://github.com/Raflyf/LivelyDesk",
+      demoUrl: "https://livelydesk.vercel.app",
+      stars: 1
     }
   ]
 };

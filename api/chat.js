@@ -126,12 +126,12 @@ Wajib jadikan rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dil
    - Pairing cepat via pemindaian QR-code lokal dan token dinamis (secrets.token_urlsafe). Tanpa perlu menginstal aplikasi tambahan di HP.`;
 
   const fotoKitaSection = `4. **FotoKitaBlur**:
-   - URL Repositori: https://github.com/FotoKitaBlur/FotoKitaBlur
+   - URL Repositori: https://github.com/Raflyf/FotoKitaBlur
    - Edge AI Computer Vision di browser berbasis MediaPipe Tasks Vision dan OpenCV.
    - Preservasi privasi wajah saat streaming via gestur dua jari (V-Sign). Frame kamera diproses secara lokal di sisi klien.`;
 
   const webPortofolioSection = `5. **web-portofolio**:
-   - URL Repositori: https://github.com/Raflyf/web-portofolio
+   - URL Repositori: https://github.com/Raflyf/RaflyfPorto
    - Platform portofolio web modern React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions, Supabase PostgreSQL.
    - Terminal AI interaktif dengan Auto Router Gateway dan Continuous RAG Memory.`;
 
@@ -1242,8 +1242,8 @@ async function searchWebContext(query, history = []) {
       { pattern: /\b(?:spam[-_ ]?email|skripsi|classifier|concept[-_ ]?drift)\b/i, repo: 'Raflyf/Spam-Email' },
       { pattern: /\b(?:openplagiarism(?:checker)?|plagiarism|plagiarisme|shingling)\b/i, repo: 'Raflyf/OpenPlagiarismChecker' },
       { pattern: /\b(?:laser[-_ ]?pointer[-_ ]?ppt|pointer|presenter|gyroscope)\b/i, repo: 'Raflyf/laser_pointer_PPT' },
-      { pattern: /\b(?:fotokitablur|foto kita|mediapipe|gestur|v-sign)\b/i, repo: 'FotoKitaBlur/FotoKitaBlur' },
-      { pattern: /\b(?:web[-_ ]?portofolio|portfolio|liquid glassmorphism)\b/i, repo: 'Raflyf/web-portofolio' }
+      { pattern: /\b(?:fotokitablur|foto kita|mediapipe|gestur|v-sign)\b/i, repo: 'Raflyf/FotoKitaBlur' },
+      { pattern: /\b(?:web[-_ ]?portofolio|portfolio|liquid glassmorphism|raflyfporto)\b/i, repo: 'Raflyf/RaflyfPorto' }
     ];
     for (const rp of repoPatterns) {
       if (rp.pattern.test(query)) {

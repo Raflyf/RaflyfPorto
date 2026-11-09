@@ -21,7 +21,7 @@ test('built case study stays readable as static HTML', () => {
   const article = readFileSync(new URL('../dist/contoh-portfolio-react-tailwind.html', import.meta.url), 'utf8');
   assert.equal((article.match(/<h1\b/g) || []).length, 1);
   assert.match(article, /Contoh Portfolio React/);
-  assert.match(article, /href="https:\/\/github.com\/Raflyf\/web-portofolio"/);
+  assert.match(article, /href="https:\/\/github\.com\/Raflyf\/RaflyfPorto"/);
   assert.match(article, /rel="canonical" href="https:\/\/raflyf\.vercel\.app\/contoh-portfolio-react-tailwind"/);
   assert.doesNotMatch(article, /<script(?![^>]*application\/ld\+json)/);
   for (const name of ['desktop', 'mobile']) {

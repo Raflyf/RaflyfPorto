@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink, Search, Database, Square, RotateCcw, History, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
-import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
+import { DEVELOPER_PROFILE, CERTIFICATES_DATA, PROJECTS_DATA } from '../../data';
 import { telemetry } from '../../lib/telemetry';
 
 const COMMAND_REGISTRY = {
@@ -25,12 +25,7 @@ const COMMAND_REGISTRY = {
   ],
   projects: () => [
     "--- OPEN SOURCE PROJECTS & RESEARCH ---",
-    "1. OpenPlagiarismChecker - Mesin Riset Pemeriksa Dokumen Akademik NLP (SBERT & N-Gram)",
-    "2. Spam-Email Detection System - Riset Skripsi S1 (CNB vs XGBoost + Domain Adaptation)",
-    "3. FreeAiBot - Asisten AI Multimodal 24/7 (WhatsApp & Telegram, Whisper, Multi-Provider Failover)",
-    "4. laser_pointer_PPT - Pengendali Presentasi Nirsentuh (Gyroscope & WebSockets)",
-    "5. FotoKitaBlur - Real-time Hand Gesture & Face Tracking (MediaPipe & OpenCV)",
-    "6. Web Portofolio & AI Platform - React 19, Tailwind, Framer Motion, Supabase RAG",
+    ...PROJECTS_DATA.map((project, index) => `${index + 1}. ${project.title} - ${project.description}`),
     "Cek selengkapnya di GitHub: https://github.com/Raflyf"
   ],
   certifs: () => [
@@ -524,6 +519,12 @@ function formatMessageContent(content) {
 
   return text;
 }
+
+const MARKDOWN_PLUGINS = [remarkGfm];
+
+const MessageMarkdown = React.memo(function MessageMarkdown({ content }) {
+  return <ReactMarkdown remarkPlugins={MARKDOWN_PLUGINS}>{formatMessageContent(content)}</ReactMarkdown>;
+});
 
 export default function TerminalAI({ onClose } = {}) {
   const { 
@@ -1520,9 +1521,7 @@ export default function TerminalAI({ onClose } = {}) {
                 
                 <div className="w-fit max-w-full stitch-ai-bubble rounded-2xl rounded-tl-sm px-4 py-3 sm:px-5 sm:py-3.5 text-slate-100 font-sans">
                   <div className="markdown-body font-sans max-w-none leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {formatMessageContent(msg.content)}
-                    </ReactMarkdown>
+                    <MessageMarkdown content={msg.content} />
                     {msg.isTyping && (
                       <span className="inline-block w-2 h-4 bg-cyan-400 animate-pulse ml-1 align-middle" />
                     )}

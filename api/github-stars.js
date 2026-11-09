@@ -9,7 +9,11 @@ const FALLBACK_GROUND_TRUTH = {
   'spam-email': 3,
   'laser_pointer_ppt': 2,
   'fotokitablur': 2,
+  'raflyfporto': 2,
   'web-portofolio': 2,
+  'wallpaperlive': 1,
+  'transparentbar': 1,
+  'livelydesk': 1,
   'project-landing-page-hari-senin': 0,
   'raflyf': 0
 };
