@@ -1,7 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/((?!api|certificates|assets|favicon).*$)", "destination": "/index.html" }
+    { "source": "/((?!api|certificates|assets|favicon|robots\\.txt|sitemap\\.xml|google).*$)", "destination": "/index.html" }
   ],
   "functions": {
     "api/chat.js": {
