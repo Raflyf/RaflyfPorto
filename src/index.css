@@ -416,7 +416,7 @@
 
 /* Marquee edge fade: mask transparan (bukan gradient warna solid).
    PENTING (fix 25 Sep): edge fade lama memakai `from-[#06080d]` (warna solid
-   halaman) — di atas wallpaper terlihat sebagai BAR HITAM di tepi kiri/kanan
+   halaman) - di atas wallpaper terlihat sebagai BAR HITAM di tepi kiri/kanan
    (keluhan: "pinggirannya ada hitamnya"). Mask membuat elemen benar-benar
    memudar ke transparan sehingga wallpaper tetap terlihat. */
 .marquee-mask-x {
@@ -424,7 +424,7 @@
   mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
 }
 /* ==========================================================================
-   Scroll Reveal (CSS Compositor GPU) — lihat components/ui/Reveal.jsx.
+   Scroll Reveal (CSS Compositor GPU) - lihat components/ui/Reveal.jsx.
    - PENTING (anti-lag & anti-ghost-blur): JANGAN animasikan `opacity` atau `scale`
      pada kartu ber-backdrop-filter. Mengubah opacity < 1 membuat Chromium membentuk
      Backdrop Root sementara (efek kaca menjadi berlapis-lapis / pop-in), dan mengubah
@@ -464,7 +464,7 @@
    kaca / ber-backdrop-filter ATAU leluhurnya. Chromium membentuk "backdrop
    root" saat opacity < 1 → backdrop-filter kehilangan sampel latar → blur
    MATI selama transisi lalu "pop" saat opacity mencapai 1 (keluhan user:
-   "card transparan lalu langsung blur"). Transform aman — terukur blur tetap
+   "card transparan lalu langsung blur"). Transform aman - terukur blur tetap
    aktif sepanjang animasi (dx 0.14 vs 4.7+ saat opacity dianimasikan). */
 @keyframes glass-reveal {
   from {
@@ -480,7 +480,7 @@
 }
 
 /* Modal spring entrance: scale + translate saja, TANPA opacity (opacity
-   mematikan backdrop-filter selama animasi — lihat catatan glass-reveal). */
+   mematikan backdrop-filter selama animasi - lihat catatan glass-reveal). */
 @keyframes glass-spring-in {
   0% {
     transform: scale(0.92) translateY(16px);
@@ -900,7 +900,7 @@ body::-webkit-scrollbar,
 }
 
 /* FIX M5: markdown rendered inside liquid-glass surfaces (e.g. terminal AI
-   bubbles, inset panels) must also flip to dark ink in light mode — the global
+   bubbles, inset panels) must also flip to dark ink in light mode - the global
    .markdown-body remap can be out-ranked by the glass surface remaps. */
 :root:not(.dark) .liquid-glass-inset .markdown-body,
 :root:not(.dark) .liquid-glass .markdown-body,

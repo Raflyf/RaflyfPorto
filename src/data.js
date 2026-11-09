@@ -82,14 +82,14 @@ export const PROJECTS_DATA_I18N = {
     },
     {
       id: "solar-system",
-      title: "Tata Surya 3D — Simulasi Skala 1:1",
+      title: "Tata Surya 3D - Simulasi Skala 1:1",
       category: "tools",
       categoryLabel: "Computational Astronomy / WebGL",
       badge: "Real-Scale NASA Simulation",
       description: "Simulator tata surya 3D berskala 1:1 sebenarnya dengan tekstur asli NASA/USGS/Hubble. Dilengkapi dengan efemeris JPL terverifikasi untuk pergerakan benda langit yang akurat.",
-      longDescription: "Proyek edukasi astronomi berbasis three.js yang memodelkan Matahari, 8 planet, 12 satelit alami, cincin Saturnus ber-Divisi Cassini, sabuk asteroid 2.400 batuan, serta Bima Sakti nyata sebagai latar. Seluruh jarak dan radius memakai skala 1:1 tanpa pembesaran — diverifikasi langsung terhadap JPL Horizons, IAU WGCCRE, dan katalog HYG v3.8. Posisi planet cocok dalam selisih 0,0005°–0,15°, Bulan dalam 3–13 detik busur, dan 16 gerhana terdeteksi penuh vs katalog NASA.",
+      longDescription: "Proyek edukasi astronomi berbasis three.js yang memodelkan Matahari, 8 planet, 12 satelit alami, cincin Saturnus ber-Divisi Cassini, sabuk asteroid 2.400 batuan, serta Bima Sakti nyata sebagai latar. Seluruh jarak dan radius memakai skala 1:1 tanpa pembesaran - diverifikasi langsung terhadap JPL Horizons, IAU WGCCRE, dan katalog HYG v3.8. Posisi planet cocok dalam selisih 0,0005°–0,15°, Bulan dalam 3–13 detik busur, dan 16 gerhana terdeteksi penuh vs katalog NASA.",
       keyFeatures: [
-        "Skala 1:1 murni tanpa pembesaran — verifikasi terukur vs JPL Horizons (selisih sudut 0,0005°–0,15°)",
+        "Skala 1:1 murni tanpa pembesaran - verifikasi terukur vs JPL Horizons (selisih sudut 0,0005°–0,15°)",
         "Tekstur permukaan asli NASA/USGS/Hubble resolusi tinggi + normal map relief kawah",
         "Shader khusus Bumi siang/malam dengan lampu kota & awan 8K bergerak",
         "Cincin Saturnus dengan Divisi Cassini (ketebalan, pencahayaan, bayangan planet)",
@@ -283,14 +283,14 @@ export const PROJECTS_DATA_I18N = {
     },
     {
       id: "solar-system",
-      title: "Tata Surya 3D — Simulasi Skala 1:1",
+      title: "Tata Surya 3D - Simulasi Skala 1:1",
       category: "tools",
       categoryLabel: "Computational Astronomy / WebGL",
       badge: "Real-Scale NASA Simulation",
       description: "True 1:1-scale 3D solar system simulator with authentic NASA/USGS/Hubble surface textures, backed by verified JPL ephemerides for accurate celestial motion.",
-      longDescription: "Educational astronomy project built on three.js modelling the Sun, 8 planets, 12 natural satellites, Saturn's rings with Cassini Division, a 2,400-rock asteroid belt, and a real Milky Way backdrop. Every distance and radius uses true 1:1 scale without enlargement — verified directly against JPL Horizons, IAU WGCCRE, and the HYG v3.8 catalogue. Planetary positions match within 0.0005°–0.15°, the Moon within 3–13 arcseconds, and all 16 eclipses are detected versus the NASA eclipse catalogue.",
+      longDescription: "Educational astronomy project built on three.js modelling the Sun, 8 planets, 12 natural satellites, Saturn's rings with Cassini Division, a 2,400-rock asteroid belt, and a real Milky Way backdrop. Every distance and radius uses true 1:1 scale without enlargement - verified directly against JPL Horizons, IAU WGCCRE, and the HYG v3.8 catalogue. Planetary positions match within 0.0005°–0.15°, the Moon within 3–13 arcseconds, and all 16 eclipses are detected versus the NASA eclipse catalogue.",
       keyFeatures: [
-        "Pure 1:1 scale with zero enlargement — measured verification vs JPL Horizons (angular deviation 0.0005°–0.15°)",
+        "Pure 1:1 scale with zero enlargement - measured verification vs JPL Horizons (angular deviation 0.0005°–0.15°)",
         "Authentic high-resolution NASA/USGS/Hubble surface textures + crater-relief normal maps",
         "Custom day/night Earth shader with city lights and drifting 8K cloud layer",
         "Saturn's rings with Cassini Division (thickness, illumination, planet shadowing)",
@@ -818,31 +818,31 @@ export const TIMELINE_DATA_I18N = {
   id: [
     {
       type: "education",
-      period: "2022 — Sekarang",
+      period: "2022 - Sekarang",
       title: "Mahasiswa S1 Informatika",
       institution: "Universitas Bina Sarana Informatika (UBSI), Kampus Sukabumi",
       description: "Fokus mendalami kecerdasan buatan (NLP, Machine Learning, Computer Vision), arsitektur jaringan MikroTik (MTCNA), pemrograman Python, arsitektur basis data, dan rekayasa perangkat lunak."
     },
     {
-      period: "Feb — Jun 2024",
-      title: "Program Kampus Mengajar — Angkatan 7",
+      period: "Feb - Jun 2024",
+      title: "Program Kampus Mengajar - Angkatan 7",
       institution: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi (Kemendikbudristek RI)",
       description: "Menyusun program kerja pelaksanaan kegiatan edukasi dan literasi digital selama 4 bulan, serta bertindak sebagai seksi dokumentasi media."
     },
     {
-      period: "2023 — 2024",
-      title: "Anggota Divisi Pendidikan — HIMAIF UBSI",
+      period: "2023 - 2024",
+      title: "Anggota Divisi Pendidikan - HIMAIF UBSI",
       institution: "Himpunan Mahasiswa Informatika (HIMAIF)",
       description: "Berpartisipasi merancang dan mengeksekusi kegiatan edukatif untuk mahasiswa informatika serta koordinasi seminar ke sekolah-sekolah."
     },
     {
-      period: "Agu — Sep 2023",
+      period: "Agu - Sep 2023",
       title: "Staf Magang Divisi Keuangan & Sistem",
       institution: "Dinas Kelautan, Perikanan, dan Peternakan",
       description: "Mengelola pembukuan kas data digital, riset alur keuangan instansi, dan sinkronisasi sistem administrasi pemerintahan."
     },
     {
-      period: "2023 — Sekarang",
+      period: "2023 - Sekarang",
       title: "Freelance IT Support & System Optimization",
       institution: "Jasa Mandiri / Komunitas Lokal",
       description: "Melayani instalasi sistem operasi, pengecekan, perbaikan, dan optimasi performa perangkat keras/lunak komputer."
@@ -851,31 +851,31 @@ export const TIMELINE_DATA_I18N = {
   en: [
     {
       type: "education",
-      period: "2022 — Present",
+      period: "2022 - Present",
       title: "Undergraduate Student in Informatics Engineering",
       institution: "Bina Sarana Informatika University (UBSI), Sukabumi Campus",
       description: "Deepening research in Artificial Intelligence (NLP, Machine Learning, Computer Vision), MikroTik network architecture (MTCNA), Python systems programming, database architecture, and software engineering."
     },
     {
-      period: "Feb — Jun 2024",
-      title: "Kampus Mengajar Program — Batch 7",
+      period: "Feb - Jun 2024",
+      title: "Kampus Mengajar Program - Batch 7",
       institution: "Ministry of Education, Culture, Research, and Technology (Kemendikbudristek RI)",
       description: "Formulated educational programs and digital literacy activities across 4 months, while managing technical media documentation."
     },
     {
-      period: "2023 — 2024",
-      title: "Education Division Member — HIMAIF UBSI",
+      period: "2023 - 2024",
+      title: "Education Division Member - HIMAIF UBSI",
       institution: "Informatics Student Association (HIMAIF)",
       description: "Participated in designing and executing educational workshops for informatics students and coordinating tech seminars for local schools."
     },
     {
-      period: "Aug — Sep 2023",
+      period: "Aug - Sep 2023",
       title: "Finance & Systems Division Intern",
       institution: "Department of Marine Fisheries and Livestock",
       description: "Managed digital bookkeeping workflows, audited administrative fund flow processes, and assisted local government administrative systems."
     },
     {
-      period: "2023 — Present",
+      period: "2023 - Present",
       title: "Freelance IT Support & System Optimization",
       institution: "Independent Services / Local Community",
       description: "Delivering operating system deployments, hardware diagnostics, repairs, and performance tuning for computing workstations."

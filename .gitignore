@@ -40,7 +40,7 @@ dist-v2/
 .vercel
 .env*
 
-# Arsip & dokumentasi internal (dibersihkan 25 Sep — tidak di-push ke GitHub)
+# Arsip & dokumentasi internal (dibersihkan 25 Sep - tidak di-push ke GitHub)
 archive_v1/
 backup_v1/
 AUDIT_REPORT.md

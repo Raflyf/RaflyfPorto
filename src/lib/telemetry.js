@@ -75,7 +75,7 @@ class TelemetryEngine {
     };
 
     // 1. Always store in local high-speed circular cache instantly
-    //    (offline fallback — does NOT emit the live update signal)
+    //    (offline fallback - does NOT emit the live update signal)
     this.storeLocally(payload);
 
     // 2. If Supabase is configured, sync asynchronously via REST API.

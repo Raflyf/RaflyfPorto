@@ -42,7 +42,7 @@ const PIN_SALT = 'rafly_telemetry_salt';
 const TARGET_EMAIL = 'raflyfirmansyah02@gmail.com';
 
 // OTP verification attempt limiter (FIX M6): the in-memory cache is only a fast
-// path — the source of truth is persisted in admin_auth_config (otp_attempts /
+// path - the source of truth is persisted in admin_auth_config (otp_attempts /
 // otp_blocked_until) via service-role REST calls, so the limiter survives cold
 // starts and multiple instances.
 const otpAttemptCache = new Map();
@@ -58,7 +58,7 @@ const OTP_SEND_MIN_INTERVAL_MS = 60 * 1000; // 60 seconds between sends for the 
 
 // Trusted client IP: prefer Vercel's trusted header, else the LAST element of
 // x-forwarded-for (the value appended by the outermost trusted proxy), else the
-// raw socket address. Never trust the first x-forwarded-for segment — clients
+// raw socket address. Never trust the first x-forwarded-for segment - clients
 // can spoof it to bypass the OTP throttle.
 function getClientIp(req) {
   const trusted = req.headers['x-vercel-forwarded-for'];
@@ -237,7 +237,7 @@ async function dispatchEmail(otpCode) {
   const resendFrom = process.env.RESEND_FROM || 'onboarding@resend.dev';
 
   const subject = `[Admin Security] Kode OTP Reset Master PIN: ${otpCode}`;
-  const messageBody = `Halo Rafly Firmansyah,\n\nBerikut adalah kode OTP verifikasi untuk mereset Master PIN Observability Dashboard Anda:\n\nKODE OTP: ${otpCode}\n\nKode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapapun.\n\nJika Anda tidak melakukan permintaan ini, abaikan email ini.\n\n— Rafly Firmansyah Portfolio Security System`;
+  const messageBody = `Halo Rafly Firmansyah,\n\nBerikut adalah kode OTP verifikasi untuk mereset Master PIN Observability Dashboard Anda:\n\nKODE OTP: ${otpCode}\n\nKode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapapun.\n\nJika Anda tidak melakukan permintaan ini, abaikan email ini.\n\n- Rafly Firmansyah Portfolio Security System`;
   const htmlBody = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #0b0f19; color: #f1f5f9; border-radius: 12px; border: 1px solid #1e293b;">
   <div style="text-align: center; margin-bottom: 24px;">
     <h2 style="color: #6366f1; margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">Observability Security Gateway</h2>
@@ -310,8 +310,8 @@ async function dispatchEmail(otpCode) {
     }
   }
 
-  // Fallback: log only the target email — never log OTP digits (even masked).
-  console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')} (Valid for 10 min — email provider not configured)`);
+  // Fallback: log only the target email - never log OTP digits (even masked).
+  console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')} (Valid for 10 min - email provider not configured)`);
   return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP not logged.' };
 }
 
@@ -480,7 +480,7 @@ export default async function handler(req, res) {
     const params = { ...query, ...body };
     // SECURITY (fix audit 25 Sep): JANGAN default ke 'get_auth_state'.
     // Sebelumnya POST tanpa body mengembalikan state auth internal
-    // (lockout_attempts, locked_until, has_active_otp, updated_at) — informasi
+    // (lockout_attempts, locked_until, has_active_otp, updated_at) - informasi
     // gratis bagi penyerang untuk memetakan jadwal lockout. Sekarang action
     // WAJIB eksplisit; tanpa action -> 400.
     const action = typeof params.action === 'string' ? params.action.trim() : '';
@@ -578,7 +578,7 @@ export default async function handler(req, res) {
 
       // 2. Direct Table Fallback
       // FAIL-CLOSED: the stored hash comes ONLY from the database. If the row
-      // is missing, login is refused — the seeded default is never accepted.
+      // is missing, login is refused - the seeded default is never accepted.
       let storedHash = '';
       let currentAttempts = 0;
 
@@ -640,7 +640,7 @@ export default async function handler(req, res) {
         console.warn('[Admin OTP] Supabase verify_pin fetch error:', err.message);
       }
 
-      // m-7: duplicate match path removed — the direct-table match branch above
+      // m-7: duplicate match path removed - the direct-table match branch above
       // already returns with a stored session token, so this block was dead.
       const newAttempts = currentAttempts + 1;
       const willLock = newAttempts >= 5;
@@ -912,7 +912,7 @@ export default async function handler(req, res) {
         }
         const verifyData = await verifyRes.json();
         // FAIL-CLOSED: no default-hash fallback. If the stored hash is missing,
-        // refuse the change — the seeded default must never be an accepted proof.
+        // refuse the change - the seeded default must never be an accepted proof.
         const storedHash = verifyData?.[0]?.pin_hash || '';
         if (!storedHash || !timingSafeMatch(providedCurrentHash, storedHash)) {
           return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });

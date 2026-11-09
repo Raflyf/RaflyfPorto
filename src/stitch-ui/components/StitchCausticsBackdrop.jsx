@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * StitchCausticsBackdrop — Pure High-Resolution Wallpaper Backdrop (60fps GPU)
+ * StitchCausticsBackdrop - Pure High-Resolution Wallpaper Backdrop (60fps GPU)
  * - Menggunakan wallpaper resolusi tinggi (`bg-hd.webp`) di seluruh perangkat
  *   tanpa tumpukan blob radial-gradient atau dot-grid di atas foto latar.
  * - Posisi `fixed` dengan `contain: layout style paint` dan `translateZ(0)`

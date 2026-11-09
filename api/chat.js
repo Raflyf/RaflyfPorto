@@ -240,7 +240,7 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   Lingkup Anda TIDAK TERBATAS pada website ini saja. Anda adalah asisten AI serbaguna yang berpengetahuan luas dan siap membantu menjawab pertanyaan apa saja secara umum (pemrograman, coding, arsitektur software, sains, teknologi AI terkini, pengetahuan umum, maupun eksplorasi karya dan riset Rafly Firmansyah).
 - ATURAN JAWABAN IDENTITAS ("kamu siapa", "siapa kamu", "kamu model apa", "model apa ini", dsb):
   1. JAWAB SINGKAT, PADAT, DAN DINAMIS (Cukup 1 hingga 2 kalimat mengalir). DILARANG PANJANG LEBAR ATAU BERTELE-TELE.
-  2. TEGASKAN RUANG LINGKUP UMUM & TERBUKA: Sampaikan secara alami dan ramah bahwa Anda adalah AI Assistant & Developer Agent di portofolio Rafly Firmansyah yang siap membantu menjawab apa saja—mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya dan riset di web ini.
+  2. TEGASKAN RUANG LINGKUP UMUM & TERBUKA: Sampaikan secara alami dan ramah bahwa Anda adalah AI Assistant & Developer Agent di portofolio Rafly Firmansyah yang siap membantu menjawab apa saja, mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya dan riset di web ini.
   3. DILARANG MEMBATASI DIRI HANYA PADA WEB: DILARANG mengesankan bahwa Anda hanya bisa membahas website ini saja. Anda bisa ditanya apa saja secara umum.
   4. DILARANG MENUMPAHKAN DAFTAR PROYEK: Jangan mengeja satu per satu nama proyek (seperti spam email, plagiarism, laser, dll) saat hanya ditanya siapa kamu atau model apa.
   5. DILARANG MEMBUAT KLAIM DEFENSIF APAPUN (jangan pernah sebut merek/vendor/brand).
@@ -273,11 +273,11 @@ ${identityInstruction}
 ${languageDirective}
 ${effortDirective}
 
-[PERSONA: AI AGENT ASISTEN — BUKAN BOT CHAT]:
+[PERSONA: AI AGENT ASISTEN - BUKAN BOT CHAT]:
 Anda adalah AI AGENT ASISTEN: proaktif, berorientasi tugas, dan tuntas. Beda dari bot chat biasa:
 1. INISIATIF AGENT: jika pertanyaan kurang spesifik, ambil inisiatif yang masuk akal
    (mis. langsung berikan jawaban + langkah berikutnya yang relevan) alih-alih balik bertanya kaku.
-2. BERORIENTASI HASIL: setiap jawaban harus memberi sesuatu yang bisa langsung dipakai —
+2. BERORIENTASI HASIL: setiap jawaban harus memberi sesuatu yang bisa langsung dipakai -
    fakta terverifikasi, langkah konkret, contoh, atau tautan sumber.
 3. TUNTAS & RINGKAS: selesaikan permintaan sampai tuntas, lalu berhenti. Jangan menggantung,
    jangan mengulang-ulang tawaran bantuan.
@@ -287,7 +287,7 @@ Anda adalah AI AGENT ASISTEN: proaktif, berorientasi tugas, dan tuntas. Beda dar
    tidak ada "Ada lagi yang bisa saya bantu?" di setiap akhir pesan, tidak ada basa-basi kosong.
 6. DILARANG MENYEBUT NAMA MODEL/VENDOR: jangan pernah mengaku sebagai "Qwen", "GPT", "Claude",
    "Gemini", "Nemotron", atau nama model/vendor lain. Identitas Anda adalah AI Agent Assistant
-   portofolio Rafly Firmansyah — titik. Jika ditanya model apa, jawab bahwa Anda adalah asisten
+   portofolio Rafly Firmansyah - titik. Jika ditanya model apa, jawab bahwa Anda adalah asisten
    AI yang menjalankan arsitektur multi-model (tanpa menyebut merek spesifik).
 
 [PERSONA, NADA BICARA & HUMAN-CENTRIC CONVERSATION]:
@@ -343,7 +343,7 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 
 3. Larangan Asal Menjawab, Menyangkal Realitas Rilis & Klaim Ketiadaan (Zero "Belum Ada" Fabrication):
    - DILARANG KERAS menyangkal eksistensi suatu versi produk/teknologi yang ditanyakan pengguna (misal menyangkal bahwa versi tersebut sudah dirilis) hanya karena model tidak mengetahuinya di data masa lalu.
-   - DILARANG KERAS mengklaim "belum ada", "belum dirilis", "tidak ada pengumuman resmi", atau "masih rumor" BILA blok bukti live di atas justru memuat berita/liputan tentang produk atau rilis tsb. Jika bukti memuat keberadaan produk/rilis, SAJIKAN fakta itu (dengan tanggal laporan) — JANGAN mengulang klaim ketiadaan dari ingatan lawas.
+   - DILARANG KERAS mengklaim "belum ada", "belum dirilis", "tidak ada pengumuman resmi", atau "masih rumor" BILA blok bukti live di atas justru memuat berita/liputan tentang produk atau rilis tsb. Jika bukti memuat keberadaan produk/rilis, SAJIKAN fakta itu (dengan tanggal laporan) - JANGAN mengulang klaim ketiadaan dari ingatan lawas.
    - Selalu rujuk dan laporkan fakta secara jujur berdasar bukti pencarian web real-time yang terlampir di konteks. Hanya bila bukti live BENAR-BENAR kosong, barulah nyatakan bahwa tidak ditemukan liputan terkini dalam pencarian (bukan klaim absolut "belum pernah ada").
 
 4. Larangan Mutlak Overclaim & Asal Klaim (Zero Overclaim):
@@ -621,7 +621,7 @@ function isJunkArticle(title) {
   return junkWords.some(j => low.includes(j));
 }
 
-// ponytail: fetchLiveRepoContext removed — was a no-op stub returning '' every call.
+// ponytail: fetchLiveRepoContext removed - was a no-op stub returning '' every call.
 // searchWebContext already covers all live web context needs.
 
 /**
@@ -703,8 +703,9 @@ function extractFitMarkdownContent(rawHtml, sourceUrl = '') {
 
   const entityMap = {
     '&quot;': '"', '&#39;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>',
-    '&nbsp;': ' ', '&mdash;': 'ΓÇö', '&ndash;': 'ΓÇô', '&bull;': 'ΓÇó', '&hellip;': '...'
+    '&nbsp;': ' ', '&mdash;': ' - ', '&ndash;': 'ΓÇô', '&bull;': 'ΓÇó', '&hellip;': '...'
   };
+  html = html.replace(/&(?:#0*8212|#x0*2014);/gi, ' - ');
   html = html.replace(/&(?:quot|#39|amp|lt|gt|nbsp|mdash|ndash|bull|hellip);/g, m => entityMap[m] || ' ');
 
   const lines = html.split('\n')
@@ -873,7 +874,7 @@ async function scrapeDirectWebpageContent(url) {
         }
         if (combinedPayload.length > 100) {
           // Pattern v2: arena.ai JSON format uses {"rank":N,"contenderName":"...","model":"DisplayName","modelOrganization":"Org",...}
-          // The older pattern (modelDisplayName/displayName) no longer matches — use the live-verified pattern.
+          // The older pattern (modelDisplayName/displayName) no longer matches - use the live-verified pattern.
           const entries = [];
           const seenRanks = new Set();
           // Primary: contenderName-based pattern (arena.ai leaderboard as of Sep 2026)
@@ -904,7 +905,7 @@ async function scrapeDirectWebpageContent(url) {
             return `### Data Terverifikasi dari Halaman:\n` +
               unique.map(e => {
                 const metricStr = e.metric !== null
-                  ? ` — Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
+                  ? ` - Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
                   : '';
                 return `- Rank #${e.rank}: **${e.name}**${e.org ? ` (${e.org})` : ''}${metricStr}`;
               }).join('\n');
@@ -934,7 +935,7 @@ async function scrapeDirectWebpageContent(url) {
                 subPayload += '\n' + sm[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
               }
               if (subPayload.length > 100) {
-                // Pattern v2: same logic as primary scraper — arena.ai format (Sep 2026)
+                // Pattern v2: same logic as primary scraper - arena.ai format (Sep 2026)
                 const subEntries = [];
                 const subSeenRanks = new Set();
                 const subArenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
@@ -962,7 +963,7 @@ async function scrapeDirectWebpageContent(url) {
                   return `### Data Terverifikasi dari Halaman:\n` +
                     subUnique.map(e => {
                       const metricStr = e.metric !== null
-                        ? ` — Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
+                        ? ` - Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
                         : '';
                       return `- Rank #${e.rank}: **${e.name}**${e.org ? ` (${e.org})` : ''}${metricStr}`;
                     }).join('\n');
@@ -1048,7 +1049,7 @@ async function searchWebContext(query, history = []) {
     // tanda baca dihapus) agar cerita kembar lintas feed terkolaps menjadi satu entri bukti.
     const seenNewsTitles = new Set();
     const titleDedupeKey = (str) => String(str || '')
-      .replace(/\s*[-–—|]\s*[^-–—|]+$/g, '') // Bersihkan nama portal di akhir judul (mis. "- DetikINET", "- Kompas.com")
+      .replace(/\s*[-–\u2014|]\s*[^-–\u2014|]+$/g, '') // Bersihkan nama portal di akhir judul (mis. "- DetikINET", "- Kompas.com")
       .toLowerCase()
       .replace(/[^a-z0-9\s]/gi, ' ')
       .replace(/\s+/g, ' ')
@@ -1129,7 +1130,7 @@ async function searchWebContext(query, history = []) {
     // 2. High-Precision Parallel Live Feeds (Google News Global & Indonesia + Bing News)
     const isBreakingQuery = /\b(terbaru|terkini|hari ini|kemarin|bulan ini|minggu ini|latest|today|breaking|update|baru|sekarang|now|saat ini|terbaik|ranking|peringkat|benchmark|rilis)\b/i.test(query);
 
-    // ===== 2a. DETEKSI INTENT DINI (sebelum fan-out kueri) — biar jalur lanskap TIDAK memicu
+    // ===== 2a. DETEKSI INTENT DINI (sebelum fan-out kueri) - biar jalur lanskap TIDAK memicu
     // generic fan-out mahal yang membuat respons lambat / HTTP 504. =====
     const nowDate = new Date();
     const monthNamesArr = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1159,7 +1160,7 @@ async function searchWebContext(query, history = []) {
       signal: controller.signal
     });
 
-    // ===== 2b. JALUR LANSKAP AI — jalur ramping khusus jika bukan pencarian peringkat/benchmark spesifik =====
+    // ===== 2b. JALUR LANSKAP AI - jalur ramping khusus jika bukan pencarian peringkat/benchmark spesifik =====
     let searchFetches = [];
     const isBenchmarkQuery = /\b(peringkat|ranking|leaderboard|arena|benchmark|skor|score|menang mana|versus|vs)\b/i.test(query);
     if (isAiModelLandscape && !isBenchmarkQuery) {
@@ -1174,7 +1175,7 @@ async function searchWebContext(query, history = []) {
         })
       );
     } else {
-      // ===== 2c. JALUR NORMAL / LANSKAP NON-AI — generic fan-out per subjek (dibatasi). =====
+      // ===== 2c. JALUR NORMAL / LANSKAP NON-AI - generic fan-out per subjek (dibatasi). =====
       searchFetches = searchQueries.flatMap(targetQ => {
         const fetches = [
           gnIdFetch(targetQ),
@@ -1212,7 +1213,7 @@ async function searchWebContext(query, history = []) {
     }
 
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
-    // Lanskap/overview queries sudah mengumpulkan bukti live lebar — lewati fan-out tambahan agar cepat.
+    // Lanskap/overview queries sudah mengumpulkan bukti live lebar - lewati fan-out tambahan agar cepat.
     const isTechOrCode = !isLatestLandscapeQuery && /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
     if (isTechOrCode) {
       const techKeyword = searchQueries[0] || query.slice(0, 60);
@@ -1314,7 +1315,7 @@ async function searchWebContext(query, history = []) {
     }
 
     // 4. Open-Web Encyclopedic Knowledge (Multi-Language: Indonesian & English)
-    // Dilewati untuk kueri lanskap yang butuh kecepatan — bukti berita sudah menjadi sumber utama.
+    // Dilewati untuk kueri lanskap yang butuh kecepatan - bukti berita sudah menjadi sumber utama.
     const isEncyclopedic = !isLatestLandscapeQuery && /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
     if (isEncyclopedic) {
       const mainKeyword = query
@@ -1530,7 +1531,7 @@ async function searchWebContext(query, history = []) {
             const pubYear = publishedMatch ? cleanStr(publishedMatch[1]).slice(0, 4) : '';
             if (title && !isJunkArticle(title)) {
               structuredSnippets.push({
-                text: `[Jurnal/Paper Terverifikasi (arXiv ${pubYear}) | Link: ${arxivUrl}]: "${title}" — ${summary.slice(0, 350)}`,
+                text: `[Jurnal/Paper Terverifikasi (arXiv ${pubYear}) | Link: ${arxivUrl}]: "${title}" - ${summary.slice(0, 350)}`,
                 timestamp: Date.now() + 850000000,
                 score: 92
               });
@@ -1586,7 +1587,7 @@ async function searchWebContext(query, history = []) {
                 candidateArticles.push({ url: itemLink, score: relScore, title });
               }
               if (searchKeywords.length === 0 || relScore > 0) {
-                const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 150)}` : title;
+                const fullText = desc && desc.length > 20 ? `${title} - ${desc.slice(0, 150)}` : title;
                 const linkSuffix = (itemLink && isSafePublicUrl(itemLink)) ? ` | Link Sumber: ${itemLink}` : '';
                 const entry = pubDate ? `[Global Live Web/News (${pubDate})${linkSuffix}]: ${fullText}` : `[Global Live Web/News${linkSuffix}]: ${fullText}`;
                 structuredSnippets.push({ text: entry, timestamp: ts, score: relScore });
@@ -1857,7 +1858,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
 
 // Trusted client IP: prefer Vercel's trusted header, else the LAST element of
 // x-forwarded-for (the value appended by the outermost trusted proxy), else the
-// raw socket address. Never trust the first x-forwarded-for segment — clients
+// raw socket address. Never trust the first x-forwarded-for segment - clients
 // can spoof it to bypass per-IP rate limits.
 function getClientIp(req) {
   const headers = req?.headers || {};
@@ -1939,7 +1940,7 @@ async function isRateLimited(clientIp) {
         const persistedCount = Array.isArray(rows) && rows.length > 0 ? (rows[0].request_count || 0) : 0;
         // Boundary is >= MAX (same as the in-memory fallback): block at MAX, allow below.
         if (persistedCount >= MAX_REQUESTS_PER_WINDOW) return true;
-        // Increment persisted counter (optimistic, fire-and-forget, best-effort —
+        // Increment persisted counter (optimistic, fire-and-forget, best-effort -
         // concurrent instances may overwrite with the same absolute count).
         persistRateLimit(clientIp, persistedCount + 1, windowStartIso);
         return false;
@@ -1965,7 +1966,7 @@ async function isRateLimited(clientIp) {
 
 /**
  * Trusted RAG memory read (anti data-poisoning).
- * Reads ai_memories with SUPABASE_SERVICE_ROLE_KEY — the client can never
+ * Reads ai_memories with SUPABASE_SERVICE_ROLE_KEY - the client can never
  * inject memory directly; only /api/save-memory (server) writes it.
  */
 const SUPABASE_DEFAULT_ANON_KEY = 'eyJhbG...xJvU';
@@ -2399,7 +2400,7 @@ function normalizeStructuredMarkdown(str) {
   }
 
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
-  out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–—,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');
+  out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–\u2014,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');
 
   // 1.6 Normalisasi konsistensi label judul list item (Anti-Pewarnaan Huruf Tidak Konsisten):
   // Menjamin seluruh judul poin sebelum tanda titik dua (- Judul: Penjelasan, • Judul: Penjelasan, atau 1. Judul: Penjelasan)
@@ -2424,7 +2425,7 @@ function normalizeStructuredMarkdown(str) {
   });
 
   // 3. Bersihkan strip/bullet aneh sebelum heading (misal: '- - ###' atau '• • ###')
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
   out = out.replace(/([^#\n\r])\s*(#{1,6}\s+)/g, '$1\n\n$2');
 
   // 4. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
@@ -2432,7 +2433,7 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
 
   // 5. Bersihkan strip/bullet aneh sebelum angka list (tanpa memotong huruf kata sebelumnya)
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*((?<!\d|\.)\b\d{1,3}\.\s+[A-Za-z*])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*((?<!\d|\.)\b\d{1,3}\.\s+[A-Za-z*])/g, '\n\n$1');
 
   // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat atau setelah titik
   out = out.replace(/([.:?!])\s+((?<!\d|\.)\b\d{1,3}\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
@@ -2447,7 +2448,7 @@ function normalizeStructuredMarkdown(str) {
     const merged = [];
     for (let i = 0; i < numLines.length; i++) {
       const line = numLines[i];
-      // Baris berisi HANYA "N." (nomor yatim, tanpa isi) — cek isi baris berikutnya
+      // Baris berisi HANYA "N." (nomor yatim, tanpa isi) - cek isi baris berikutnya
       const orphanMatch = line.match(/^\s*(\d{1,2})\.\s*$/);
       if (orphanMatch) {
         // Baris berikutnya (setelah 0+ baris kosong) berisi konten item
@@ -2461,7 +2462,7 @@ function normalizeStructuredMarkdown(str) {
           i = j; // lewati baris konten yang sudah digabung
           continue;
         }
-        // Tak ada konten lanjutan yang layak — pertahankan baris apa adanya
+        // Tak ada konten lanjutan yang layak - pertahankan baris apa adanya
         merged.push(line);
         continue;
       }
@@ -2471,8 +2472,8 @@ function normalizeStructuredMarkdown(str) {
   }
 
   // 7. Pisahkan bullet list (- **Label**: atau - Kata atau strip pemisah) yang menempel di tengah kalimat
-  out = out.replace(/([.:?!])\s*[-–—]\s+(\*\*[^*]+\*\*:?)/g, '$1\n\n- $2');
-  out = out.replace(/([.:?!])\s*[-–—]\s+([A-Z][a-zA-Z0-9])/g, '$1\n\n- $2');
+  out = out.replace(/([.:?!])\s*[-–\u2014]\s+(\*\*[^*]+\*\*:?)/g, '$1\n\n- $2');
+  out = out.replace(/([.:?!])\s*[-–\u2014]\s+([A-Z][a-zA-Z0-9])/g, '$1\n\n- $2');
   out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
   out = out.replace(/([.:?!])\s+[-*•]\s+([A-Za-z0-9])/g, '$1\n\n- $2');
 
@@ -2487,13 +2488,13 @@ function normalizeStructuredMarkdown(str) {
   }
 
   // 8. Bersihkan artefak strip ganda sebelum kata biasa
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
 
   // 9. Format sub-item fitur (key: value) yang memiliki kalimat penjelas (BUKAN heading dan BUKAN nomor)
   out = out.replace(/\n(?![#\d\s\-*•])([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?:\s+[^\n]+)/g, '\n- $1');
 
   // 9.2 Format items following introductory colons into bullet points
-  out = out.replace(/(:\s*\n+)(?:(?![#\d\s\-*•])([A-Z][a-zA-Z0-9\s/&-]{3,45})(?:,\s+|\s*[-–—:]\s+)([A-Z][^\n]+)\n*)/g, '$1- **$2**: $3\n');
+  out = out.replace(/(:\s*\n+)(?:(?![#\d\s\-*•])([A-Z][a-zA-Z0-9\s/&-]{3,45})(?:,\s+|\s*[-–\u2014:]\s+)([A-Z][^\n]+)\n*)/g, '$1- **$2**: $3\n');
 
   // 10. Hapus bullet yang tidak sengaja tertempel di depan numbered list
   out = out.replace(/\n\s*[-*•]\s*(?<!\d|\.)(\d{1,3}\.\s+)/g, '\n$1');
@@ -2608,7 +2609,7 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
 }
 
 export default async function handler(req, res) {
-  // CORS: allowlist eksplisit — jangan pernah echo origin arbitrer dengan credentials
+  // CORS: allowlist eksplisit - jangan pernah echo origin arbitrer dengan credentials
   const ALLOWED_ORIGINS = [
     process.env.ALLOWED_ORIGIN,
     'https://raflyf.vercel.app',
@@ -2676,10 +2677,10 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     // SECURITY (anti RAG-poisoning): longTermMemory from the client body is
-    // IGNORED — memory is read server-side from ai_memories (service_role) only.
+    // IGNORED - memory is read server-side from ai_memories (service_role) only.
     const { query, history = [], attachments = [], model = 'auto', customKey = null, customProvider = null, sessionLanguage = 'id', reasoningEffort = 'auto', sessionId = null } = body;
 
-    // Rate Limiting (trusted client IP — see getClientIp)
+    // Rate Limiting (trusted client IP - see getClientIp)
     const clientIp = getClientIp(req);
     if (await isRateLimited(clientIp)) {
       return res.status(429).json({
@@ -2721,7 +2722,7 @@ export default async function handler(req, res) {
       const extra = cli.filter((m) => !seen.has(`${m.role}:${String(m.content).slice(0, 120)}`));
       return [...srv, ...extra].slice(-24);
     })();
-    // PENTING (serverless): jangan fire-and-forget promise di Vercel — runtime
+    // PENTING (serverless): jangan fire-and-forget promise di Vercel - runtime
     // membekukan proses begitu response terkirim, sehingga penyimpanan yang belum
     // selesai ikut mati. Penyimpanan pesan user DIPINDAH ke sendSuccess (di-await
     // sebelum response). Perintah /reset tetap di-await di sini karena harus
@@ -2867,8 +2868,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 
       // 0. Strip trailing meta-reflection, chain-of-thought, or constraints scratchpad leaks
       // (e.g. " - Check constraints: ...", "Response structure: ...", "Draft: ...", "Final plan: ...")
-      cleaned = cleaned.replace(/["']?\s*[-–—*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '').trim();
-      cleaned = cleaned.replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–—*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1').trim();
+      cleaned = cleaned.replace(/["']?\s*[-–\u2014*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '').trim();
+      cleaned = cleaned.replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–\u2014*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1').trim();
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
 
       // 0.1. Auto-persist validated facts from [SAVE_MEMORY: ...] to Supabase
@@ -3005,7 +3006,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       // 3.4b. Strip leading query echoes as headings or bold text (e.g. "**Kamu Model Apa?**", "### Model AI Terbaik Saat Ini", "Tentang Claude 5.1:")
       const qWords = qClean.replace(/[^\w\s]/g, ' ').trim().split(/\s+/).filter(w => w.length > 2);
       if (qWords.length >= 1) {
-        cleaned = cleaned.replace(/^(?:###?\s*|\*\*|__)?(?:Tentang\s+|Mengenai\s+)?([^\n:?]+)(?:[?:*_\s–—\-]|\*\*|__)*\n+/i, (fullMatch, leadPhrase) => {
+        cleaned = cleaned.replace(/^(?:###?\s*|\*\*|__)?(?:Tentang\s+|Mengenai\s+)?([^\n:?]+)(?:[?:*_\s–\u2014\-]|\*\*|__)*\n+/i, (fullMatch, leadPhrase) => {
           const leadWords = leadPhrase.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
           const overlap = leadWords.filter(w => qWords.some(qw => qw.toLowerCase() === w));
           if (overlap.length >= 1 && (overlap.length >= Math.min(2, qWords.length) || leadWords.length <= 4)) {
@@ -3016,13 +3017,13 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       }
 
       // 3.48. Restrukturisasi Daftar Nomor/Peringkat Inline yang Tergabung di Satu Baris (Anti-Broken List)
-      if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*\d{1,2}\.\s/i.test(cleaned) || /\s+[-–—]\s*\*?\d{1,2}\.\s/i.test(cleaned)) {
+      if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*\d{1,2}\.\s/i.test(cleaned) || /\s+[-–\u2014]\s*\*?\d{1,2}\.\s/i.test(cleaned)) {
         // a. Intro yang diakhiri titik dua dan diikuti bullet/nomor 1
         cleaned = cleaned.replace(/(:\s*)(?:[•\-\*]\s*\*?)+\s*(?=1\.\s)/g, ':\n\n');
         // b. Normalisasi nomor pertama yang diawali bullet/asterisk liar di awal baris
         cleaned = cleaned.replace(/^[•\-\*]\s*\*?\s*(?=\d{1,2}\.\s)/gm, '');
         // c. Pisahkan item nomor 2..99 yang digabung inline dengan pemisah '-' atau ';' atau bullet
-        cleaned = cleaned.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(\d{1,2})\.\s*\*?\s*/g, '\n$1. ');
+        cleaned = cleaned.replace(/(?::\s*)?(?:\s+(?:[-–\u2014]|;)\s*|\s*[;•]\s*)\*?(\d{1,2})\.\s*\*?\s*/g, '\n$1. ');
         // d. Bersihkan sisa asterisk liar di sekitar angka nomor urut di awal baris
         cleaned = cleaned.replace(/(?:^|\n)\s*\*+(\d{1,2})\.\s*\*?/g, '\n$1. ');
 
@@ -3040,9 +3041,9 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
             const num = numMatch[1];
             let rest = numMatch[2].trim().replace(/:\s*$/, '').replace(/^\*+|\*+$/g, '').trim();
             if (!rest.startsWith('**')) {
-              const descMatch = rest.match(/^([^-–—:]+?)\s*[-–—:]\s+(.+)$/);
+              const descMatch = rest.match(/^([^-–\u2014:]+?)\s*[-–\u2014:]\s+(.+)$/);
               if (descMatch) {
-                formattedItems.push(`${num}. **${descMatch[1].trim()}** — ${descMatch[2].trim()}`);
+                formattedItems.push(`${num}. **${descMatch[1].trim()}**: ${descMatch[2].trim()}`);
               } else {
                 formattedItems.push(`${num}. **${rest}**`);
               }
@@ -3057,10 +3058,10 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       }
 
       // 3.5. Ensure distinct line breaks for inline sub-sections and bullet points
-      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
+      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&\u2014–,]+?)(?:\*+|\*\*|:)?\s*[-–\u2014:]\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/\s+[-*•]\s+\*\*([^*:\n]+)\*\*:\s*/g, '\n- **$1**: ');
-      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
-      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\*+([^*:\n]+)\*+\s*[\-–—:]\s*/g, '\n- **$1**: ');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–\u2014:]\s*/g, '\n- **$1**: ');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\*+([^*:\n]+)\*+\s*[\-–\u2014:]\s*/g, '\n- **$1**: ');
 
       // 3.6. Clean rogue colons and malformed bullet point headers
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]\s*:\s*/g, '\n- ');
@@ -3104,7 +3105,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         cleaned = cleaned.replace(/(?:^|[.!?]\s*)Saya\s+juga\s+siap\s+membantu\s+verifikasi\s+sertifikasi[^.!?\n]*[.!?]?/gi, '');
         cleaned = cleaned.replace(/(?:^|[.!?]\s*)Semua\s+ini\s+saya\s+lakukan\s+dengan\s+cara\s+yang\s+santai[^.!?\n]*[.!?]?/gi, '');
         cleaned = cleaned.replace(/\s*,\s*serta\s+mengeksplorasi\s+detail\s+teknis\s+lainnya[^.!?\n]*/gi, '');
-        cleaned = cleaned.replace(/Saya\s+siap\s+membantu\s+Anda\s+menjelajahi\s+proyek\s+rekayasa\s+perangkat\s+lunak,\s*riset\s+machine\s+learning[^.!?\n]*[.!?]?/gi, 'Saya siap membantu menjawab berbagai pertanyaan—mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya di portofolio ini.');
+        cleaned = cleaned.replace(/Saya\s+siap\s+membantu\s+Anda\s+menjelajahi\s+proyek\s+rekayasa\s+perangkat\s+lunak,\s*riset\s+machine\s+learning[^.!?\n]*[.!?]?/gi, 'Saya siap membantu menjawab berbagai pertanyaan, mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya di portofolio ini.');
 
         // 3. Batasi hanya mengambil maksimal 2 kalimat pertama agar tetap singkat, padat, dan dinamis
         const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
@@ -3116,8 +3117,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         // 4. Emergency fallback jika kosong
         if (!cleaned || cleaned.trim().length < 15) {
           cleaned = sessionLanguage === 'en'
-            ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website. I am ready to assist you with any questions—from programming, science, and technology, to exploring projects on this site. How can I help you?`
-            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah. Saya siap membantu menjawab pertanyaan apa saja—mulai dari pemrograman, teknologi, wawasan umum, hingga seputar portofolio ini. Ada yang bisa saya bantu?`;
+            ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website. I am ready to assist you with any questions, from programming, science, and technology, to exploring projects on this site. How can I help you?`
+            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah. Saya siap membantu menjawab pertanyaan apa saja, mulai dari pemrograman, teknologi, wawasan umum, hingga seputar portofolio ini. Ada yang bisa saya bantu?`;
         }
       }
 
@@ -3181,7 +3182,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
-      cleaned = cleaned.replace(/^([•\-\*]\s*)\*+([^\n*:-]+)\*+\s*[-–—:]\s*/gm, '$1**$2**: ');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*+([^\n*:-]+)\*+\s*[-–\u2014:]\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)([^\n*:-]+)\*\s*-\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*-\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*:\s*/gm, '$1**$2**: ');
@@ -3200,7 +3201,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // Mencegah tampilan terpotong jelek jika model terhenti di tengah karakter pembuka
       cleaned = cleaned.replace(/([A-Za-z0-9\s._\-]+)\s*\(\s*$/m, '$1');
       cleaned = cleaned.replace(/([a-zA-Z0-9\s._\-]+)\s*\[\s*$/m, '$1');
-      cleaned = cleaned.replace(/[-–—:;,]\s*$/m, '').trim();
+      cleaned = cleaned.replace(/[-–\u2014:;,]\s*$/m, '').trim();
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
@@ -3236,7 +3237,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       cleaned = cleaned.replace(/https?:\/\/(?:news\.google\.com|www\.bing\.com\/news)[^\s)"'>]+/gi, '');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*(?:\*\*)?Tautan Terkait(?:\*\*)?:?\s*$/gim, '');
 
-      // 7. Relocate inline links — HANYA jika link benar-benar menempel di tengah kalimat
+      // 7. Relocate inline links - HANYA jika link benar-benar menempel di tengah kalimat
       //    (karakter kata langsung sebelum DAN sesudah link, tanpa \\n di sekitarnya).
       //    Link akademik (doi/arxiv/openalex/semanticscholar/pubmed) TIDAK PERNAH direlokasi
       //    agar selalu tampil in-place sebagai referensi yang bisa diklik.
@@ -3246,7 +3247,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         const extractedLinks = [];
         cleaned = cleaned.replace(/([a-zA-Z0-9,)])(\s*)\[([^\]\n]+)\]\((https?:\/\/[^)\n]+)\)(\s*)([a-zA-Z0-9])/g,
           (m, before, sp1, label, linkUrl, sp2, after) => {
-            // Skip academic links — pertahankan in-place
+            // Skip academic links - pertahankan in-place
             if (ACADEMIC_DOMAINS.test(linkUrl)) return m;
             extractedLinks.push(`- ${label}: [${linkUrl}](${linkUrl})`);
             return `${before}${sp1}${sp2}${after}`;
@@ -3348,7 +3349,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
 
         // 3) Penutup-bold yatim di akhir label yang tidak memiliki pembuka sejati
         const hasRealOpener = /\*\*[A-Za-z0-9\u00C0-\u024F]/.test(line);
-        const hasOrphanClose = /\)\*\*\s*[:,\-–—\s]/.test(line) || /\*\*\s*[:,\-–—\s]/.test(line);
+        const hasOrphanClose = /\)\*\*\s*[:,\-–\u2014\s]/.test(line) || /\*\*\s*[:,\-–\u2014\s]/.test(line);
         if (!hasRealOpener && hasOrphanClose) {
           line = line.replace(/\*\*/g, '');
         }
@@ -3995,7 +3996,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // 10 Laguna (OpenRouter) | 11 Laguna (OpenCode) | lalu model aktif lain.
       // MiniMax dikeluarkan dari general chat (khusus multimodal/vision).
       // Catatan probe: ultra-ollama (nemotron-3-ultra) sempat timeout; tetap dicoba sesuai
-      // urutan permintaan — bila gagal executor otomatis melompat ke step berikutnya.
+      // urutan permintaan - bila gagal executor otomatis melompat ke step berikutnya.
       return [
         // 1. Nemotron Nano (Ollama Cloud)
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 15000 },
@@ -4081,7 +4082,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // Penting: urutan prioritas pengguna bisa panjang (11+ langkah). Executor lama hanya
       // mencoba 3 (race) + 2 (tail) = 5 langkah, sehingga step 6+ TIDAK PERNAH dicoba.
       // Kini: step #1 (Nemotron Nano, prioritas utama user) DICOBA EKSLUSIF dulu dengan budget
-      // sendiri — kalau langsung di-race paralel, Gemma4 yang kebetulan lebih cepat sering menang
+      // sendiri - kalau langsung di-race paralel, Gemma4 yang kebetulan lebih cepat sering menang
       // dan Nano nyaris tak pernah terpakai meski prioritas #1. Setelah #1 gagal, race 3 step
       // berikutnya, lalu susuri SELURUH sisa pipeline serial dengan timeout ketat.
       // sendSuccess aman dipanggil berkali-kali karena guard `res.headersSent` menulis sekali.

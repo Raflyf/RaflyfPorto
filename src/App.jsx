@@ -5,7 +5,7 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
 import Home from './pages/Home';
-// Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
+// Dashboard is heavy (Chart.js) - code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 import StitchPortfolio from './stitch-ui/StitchPortfolio';
 const StitchDashboard = React.lazy(() => import('./stitch-ui/StitchDashboard'));

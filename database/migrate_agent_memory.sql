@@ -2,9 +2,9 @@
 -- MIGRASI: Sistem Memori & Riwayat AI Agent (25 Sep 2026)
 -- ============================================================================
 -- Menyalin sistem memori proyek chatbot ke portofolio:
---   messages    — riwayat percakapan server-side per sesi
---   summaries   — ringkasan konteks (distilasi otomatis tiap 8 pesan)
---   corrections — koreksi pengguna yang harus diingat agent
+--   messages    - riwayat percakapan server-side per sesi
+--   summaries   - ringkasan konteks (distilasi otomatis tiap 8 pesan)
+--   corrections - koreksi pengguna yang harus diingat agent
 --
 -- CARA PAKAI:
 --   1. Buka Supabase Dashboard → project PORTFOLIO (rphyzcqwpkxtzllvymss)
@@ -12,11 +12,11 @@
 --   3. Aman dijalankan berulang (idempotent: IF NOT EXISTS / DROP POLICY IF EXISTS)
 --
 -- CATATAN: tabel `ai_memories` SUDAH ADA (dari schema portfolio sebelumnya),
--- jadi tidak dibuat ulang di sini — hanya dipakai.
+-- jadi tidak dibuat ulang di sini - hanya dipakai.
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- 1. messages — riwayat percakapan server-side
+-- 1. messages - riwayat percakapan server-side
 -- ----------------------------------------------------------------------------
 create table if not exists public.messages (
   id bigint generated always as identity primary key,
@@ -35,7 +35,7 @@ create table if not exists public.messages (
 );
 
 -- Index utama: (platform, chat_id, created_at desc) menutupi SELURUH pola query
--- nyata (getContext, countMessages, reset — semuanya memfilter platform='web').
+-- nyata (getContext, countMessages, reset - semuanya memfilter platform='web').
 -- Dua index tambahan (messages_chat_idx & idx_messages_platform_msg_id) DIHAPUS
 -- 25 Sep setelah ditandai "Unused Index" oleh Advisor:
 --   - messages_chat_idx redundan (prefix-nya sudah tercakup index di bawah).
@@ -44,7 +44,7 @@ create table if not exists public.messages (
 create index if not exists messages_platform_chat_idx on public.messages (platform, chat_id, created_at desc);
 
 -- ----------------------------------------------------------------------------
--- 2. summaries — ringkasan konteks per sesi
+-- 2. summaries - ringkasan konteks per sesi
 -- ----------------------------------------------------------------------------
 create table if not exists public.summaries (
   chat_id text primary key,
@@ -53,7 +53,7 @@ create table if not exists public.summaries (
 );
 
 -- ----------------------------------------------------------------------------
--- 3. corrections — koreksi pengguna yang diingat agent
+-- 3. corrections - koreksi pengguna yang diingat agent
 -- ----------------------------------------------------------------------------
 create table if not exists public.corrections (
   id bigint generated always as identity primary key,
@@ -64,7 +64,7 @@ create table if not exists public.corrections (
 create index if not exists corrections_chat_idx on public.corrections (chat_id, created_at desc);
 
 -- ----------------------------------------------------------------------------
--- 4. ROW LEVEL SECURITY — hanya service_role (serverless function) yang boleh akses
+-- 4. ROW LEVEL SECURITY - hanya service_role (serverless function) yang boleh akses
 --    Anon/authenticated DILARANG total (cegah kebocoran riwayat & prompt poisoning)
 -- ----------------------------------------------------------------------------
 alter table public.messages enable row level security;

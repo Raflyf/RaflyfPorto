@@ -13,7 +13,7 @@ export default function CertificatesGrid() {
   const [filter, setFilter] = useState('all');
   const [selectedCert, setSelectedCert] = useState(null);
   const [selectedPage, setSelectedPage] = useState(0);
-  // FIX M6: dialog focus management — modal container ref + trigger element ref.
+  // FIX M6: dialog focus management - modal container ref + trigger element ref.
   const modalRef = useRef(null);
   const triggerRef = useRef(null);
 
@@ -112,7 +112,7 @@ export default function CertificatesGrid() {
         </div>
       </Reveal>
 
-      {/* Cards Grid — Unified GPU Reveal per-card */}
+      {/* Cards Grid - Unified GPU Reveal per-card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCertificates.map((cert, index) => (
           <Reveal 

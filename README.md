@@ -1,6 +1,6 @@
 # Portofolio Profesional & AI Developer Lab - Rafly Firmansyah
 
-Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** — Sarjana Komputer (S1 Informatika, Universitas Bina Sarana Informatika), Analis Program Terstandar BNSP, dan Software Engineer yang berfokus pada riset *Natural Language Processing* (NLP), *Machine Learning*, arsitektur backend, dan rekayasa web modern.
+Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** - Sarjana Komputer (S1 Informatika, Universitas Bina Sarana Informatika), Analis Program Terstandar BNSP, dan Software Engineer yang berfokus pada riset *Natural Language Processing* (NLP), *Machine Learning*, arsitektur backend, dan rekayasa web modern.
 
 Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, **Framer Motion**, dan **Lenis Scroll**, didukung **Vercel Serverless Functions** serta **Supabase PostgreSQL**. Desainnya menekankan aksesibilitas WCAG 2.2 AA, efisiensi bundle melalui *lazy-loading* dan *code-splitting*, serta arsitektur keamanan *fail-closed* dengan *Row Level Security* (RLS).
 
@@ -10,7 +10,7 @@ Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, **Fram
 
 ### Terminal AI
 - **Routing Multi-Provider:** Failover otomatis antar penyedia model AI dengan rotasi kunci, pemantauan latensi, dan *fallback* berjenjang saat terjadi antrean atau limitasi.
-- **Ground-Truth Portfolio:** Pertanyaan seputar proyek, riset, pendidikan, dan sertifikasi dijawab dari basis data lokal terverifikasi — cepat dan bebas halusinasi.
+- **Ground-Truth Portfolio:** Pertanyaan seputar proyek, riset, pendidikan, dan sertifikasi dijawab dari basis data lokal terverifikasi - cepat dan bebas halusinasi.
 - **Pencarian Web Real-Time:** Kueri wawasan umum dan berita terkini didukung penelusuran langsung dengan penyaringan dan peringkat relevansi.
 - **Memori Berkelanjutan:** Menyimpan wawasan baru dan koreksi pengguna secara terstruktur, dengan konteks terpisah per sesi pengunjung.
 - **Keamanan Gateway:** Isolasi kunci API di sisi server, proteksi SSRF, pembatasan laju kueri, sanitasi masukan, dan CORS *allowlist*.
@@ -117,6 +117,10 @@ npm test
 Setelah deploy, verifikasi property baru `https://raflyf.vercel.app/` di Search Console, kirim `https://raflyf.vercel.app/sitemap.xml`, lalu inspeksi URL homepage dan studi kasus. Pertahankan verifikasi property lama dan gunakan Change of Address jika tersedia untuk kedua property. Jangan hapus redirect lama; Google menyarankan minimal satu tahun. Status alternate canonical dan page with redirect normal untuk alias, bukan target agar semua URL terindeks. Ranking/indexing tidak dijamin, dan laporan Google tidak berubah seketika.
 
 Panduan Google: https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes
+
+## Tanda baca
+
+Teks UI, metadata, dan dokumentasi menggunakan tanda hubung biasa atau titik dua, bukan em dash. Terminal menormalkan em dash pada node teks Markdown setelah parsing, termasuk entitas HTML dan pesan lama yang ditampilkan kembali. URL, contoh kode, dan data riwayat tersimpan tidak ditulis ulang. Jalankan `node --test tests/punctuation.test.mjs` untuk memeriksa regresi.
 
 ## Lisensi
 

@@ -45,7 +45,7 @@ test('robots allows Google to read noindex and points to the deployed sitemap', 
 test('returning from dashboard restores the static homepage title', () => {
   const title = read('index.html').match(/<title>(.*?)<\/title>/)[1];
   const effect = read('src/stitch-ui/StitchPortfolio.jsx').match(/useEffect\(\(\) => \{([\s\S]*?)\}, \[\]\)/)[1];
-  const document = { title: 'Dashboard Telemetri & Observatorium — Rafly Firmansyah' };
+  const document = { title: 'Dashboard Telemetri & Observatorium - Rafly Firmansyah' };
   runInNewContext(effect, { document, telemetry: { init() {}, logEvent() {} } });
   assert.equal(document.title, title);
 });

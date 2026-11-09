@@ -1,12 +1,12 @@
 # ============================================================================
-# .vercelignore — file yang TIDAK di-upload ke Vercel (25 Sep 2026)
+# .vercelignore - file yang TIDAK di-upload ke Vercel (25 Sep 2026)
 # ============================================================================
 # Vite hanya men-serve isi dist/, jadi file di bawah ini sebenarnya sudah tidak
 # pernah tampil di produksi (URL-nya jatuh ke SPA fallback index.html). Namun
 # file-file ini tetap IKUT ter-upload ke Vercel saat build. Daftar ini
 # memastikan mereka tidak pernah meninggalkan mesin lokal.
 #
-# CATATAN: file-file ini TETAP ADA di repo GitHub (version control aman) —
+# CATATAN: file-file ini TETAP ADA di repo GitHub (version control aman) -
 # hanya dikecualikan dari upload/deploy Vercel.
 # ============================================================================
 

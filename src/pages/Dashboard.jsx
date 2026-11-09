@@ -69,10 +69,10 @@ ChartJS.register(
 // PIN_SALT MUST match the server salt (api/admin-otp.js PIN_SALT). The client
 // hashes the input locally before sending pin_hash to /api/admin-otp, which
 // compares SHA-256 hashes directly. Moving to server-side PBKDF is tracked
-// separately — do not change this constant without updating the server.
+// separately - do not change this constant without updating the server.
 const PIN_SALT = "rafly_telemetry_salt";
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
-// Single source of truth: server DB only. No per-device PIN hash is stored —
+// Single source of truth: server DB only. No per-device PIN hash is stored -
 // a stale local copy is exactly what caused different PINs on different devices.
 
 // Shared Supabase config (single source of truth, see src/lib/supabase.js).
@@ -897,7 +897,7 @@ export default function Dashboard({ isStitch = true } = {}) {
     }
   };
 
-  // 5. (removed) Obsolete Supabase Config modal — data path is /api/dashboard-data.
+  // 5. (removed) Obsolete Supabase Config modal - data path is /api/dashboard-data.
 
   // 6. OTP Reset Handlers
   const handleRequestOtp = async () => {
@@ -941,7 +941,7 @@ export default function Dashboard({ isStitch = true } = {}) {
       const data = await res.json();
       if (res.ok && data.success) {
         // Server sudah menyimpan PIN baru (single source of truth).
-        // Tidak ada hash lokal yang ditulis — semua device memakai PIN yang sama.
+        // Tidak ada hash lokal yang ditulis - semua device memakai PIN yang sama.
         setOtpMessage('Master PIN berhasil direset! Silakan masuk kembali.');
         timeoutsRef.current.push(setTimeout(() => {
           setIsForgotPinOpen(false);
@@ -1317,7 +1317,7 @@ export default function Dashboard({ isStitch = true } = {}) {
           }
         }
         // Atribusi riwayat lama: jika tidak ada matcher spesifik, atribusikan ke
-        // prioritas default #1 sistem baru (DreamPrompting Qwen 3.6 27B — Tier 1 pool).
+        // prioritas default #1 sistem baru (DreamPrompting Qwen 3.6 27B - Tier 1 pool).
         if (!matched) {
           modelCounts['dp-qwen-36']++;
           if (ts > modelLastUsed['dp-qwen-36']) modelLastUsed['dp-qwen-36'] = ts;
@@ -2213,7 +2213,7 @@ export default function Dashboard({ isStitch = true } = {}) {
                         </span>
                       </td>
                       <td className="py-3 px-4 font-medium text-zinc-900 dark:text-white max-w-lg">
-                        {m.fact_text || m.memory_text || m.content || '—'}
+                        {m.fact_text || m.memory_text || m.content || '-'}
                       </td>
                       <td className="py-3 px-4 font-mono text-zinc-500 text-[10px] whitespace-nowrap">
                         {(m.session_id || 'anon').substring(0, 16)}...
@@ -2351,11 +2351,11 @@ export default function Dashboard({ isStitch = true } = {}) {
               <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5">
                 {currentActivityEvents.length > 0 ? (
                   currentActivityEvents.map((ev, i) => {
-                    const targetText = ev.event_label ? `${ev.event_target} (${ev.event_label})` : (ev.event_target || '—');
+                    const targetText = ev.event_label ? `${ev.event_target} (${ev.event_label})` : (ev.event_target || '-');
                     return (
                       <tr key={ev.id || i} className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                          {ev.created_at ? new Date(ev.created_at).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
+                          {ev.created_at ? new Date(ev.created_at).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-'}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/20 text-cyan-800 dark:text-cyan-300">

@@ -30,7 +30,7 @@ const COMMAND_REGISTRY = {
   ],
   certifs: () => [
     "--- CREDENTIALS ---",
-    ...CERTIFICATES_DATA.map(cert => `- ${cert.title} (${cert.date}) — ${cert.issuer}`)
+    ...CERTIFICATES_DATA.map(cert => `- ${cert.title} (${cert.date}) - ${cert.issuer}`)
   ],
   benchmarks: () => [
     "--- AI ENGINE BENCHMARKS (CHATBOT SOTA POOL) ---",
@@ -349,7 +349,7 @@ function normalizeStructuredMarkdown(str) {
   });
 
   // 3. Bersihkan strip/bullet aneh sebelum heading (misal: '- - ###' atau '• • ###')
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
   out = out.replace(/([^#\n\r])\s*(#{1,6}\s+)/g, '$1\n\n$2');
 
   // 4. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
@@ -357,7 +357,7 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
 
   // 5. Bersihkan strip/bullet aneh sebelum angka list (tanpa memotong huruf kata sebelumnya)
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z*])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*(\d+\.\s+[A-Za-z*])/g, '\n\n$1');
 
   // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat atau setelah titik
   out = out.replace(/([.:?!])\s+(\d+\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
@@ -367,7 +367,7 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/([.:?!])\s+[-*•]\s+([A-Za-z0-9])/g, '$1\n\n- $2');
 
   // 8. Bersihkan artefak strip ganda sebelum kata biasa
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–\u2014•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
 
   // 9. Format sub-item fitur (key: value) yang memiliki kalimat penjelas (BUKAN heading dan BUKAN nomor)
   out = out.replace(/\n(?![#\d\s\-*•])([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?:\s+[^\n]+)/g, '\n- $1');
@@ -477,10 +477,10 @@ function formatMessageContent(content) {
   let text = content;
 
   // Anti-Inline Broken List: Rekonstruksi daftar nomor/peringkat yang terdesak sebaris (misal '• *1. A: - *2. B')
-  if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text) || /\s+[-–—]\s*\*?(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text)) {
+  if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text) || /\s+[-–\u2014]\s*\*?(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text)) {
     text = text.replace(/(:\s*)(?:[•\-\*]\s*\*?)+\s*(?=1\.\s)/g, ':\n\n');
     text = text.replace(/^[•\-\*]\s*\*?\s*(?=(?<!\d|\.)\d{1,2}\.(?!\d)\s)/gm, '');
-    text = text.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(?<!\d|\.)(\d{1,2})\.(?!\d)\s*\*?\s*/g, '\n$1. ');
+    text = text.replace(/(?::\s*)?(?:\s+(?:[-–\u2014]|;)\s*|\s*[;•]\s*)\*?(?<!\d|\.)(\d{1,2})\.(?!\d)\s*\*?\s*/g, '\n$1. ');
     text = text.replace(/(?:^|\n)\s*\*+(?<!\d|\.)(\d{1,2})\.(?!\d)\s*\*?/g, '\n$1. ');
 
     const itemLines = text.split('\n');
@@ -496,9 +496,9 @@ function formatMessageContent(content) {
         const num = numMatch[1];
         let rest = numMatch[2].trim().replace(/:\s*$/, '').replace(/^\*+|\*+$/g, '').trim();
         if (!rest.startsWith('**')) {
-          const descMatch = rest.match(/^([^-–—:]+?)\s*[-–—:]\s+(.+)$/);
+          const descMatch = rest.match(/^([^-–\u2014:]+?)\s*[-–\u2014:]\s+(.+)$/);
           if (descMatch) {
-            formattedItems.push(`${num}. **${descMatch[1].trim()}** — ${descMatch[2].trim()}`);
+            formattedItems.push(`${num}. **${descMatch[1].trim()}**: ${descMatch[2].trim()}`);
           } else {
             formattedItems.push(`${num}. **${rest}**`);
           }
@@ -515,12 +515,20 @@ function formatMessageContent(content) {
   // Bersihkan karakter pembuka yatim di akhir teks jika respons terpotong sebelum ditutup
   text = text.replace(/([A-Za-z0-9\s._\-]+)\s*\(\s*$/m, '$1');
   text = text.replace(/([a-zA-Z0-9\s._\-]+)\s*\[\s*$/m, '$1');
-  text = text.replace(/[-–—:;,]\s*$/m, '').trim();
+  text = text.replace(/[-–\u2014:;,]\s*$/m, '').trim();
 
   return text;
 }
 
-const MARKDOWN_PLUGINS = [remarkGfm];
+function remarkPlainDashes() {
+  // Text nodes exclude code samples and link destinations; entities are already decoded.
+  return function visit(node) {
+    if (node.type === 'text') node.value = node.value.replace(/[\t ]*\u2014[\t ]*/g, ' - ');
+    node.children?.forEach(visit);
+  };
+}
+
+const MARKDOWN_PLUGINS = [remarkGfm, remarkPlainDashes];
 
 const MessageMarkdown = React.memo(function MessageMarkdown({ content }) {
   return <ReactMarkdown remarkPlugins={MARKDOWN_PLUGINS}>{formatMessageContent(content)}</ReactMarkdown>;
@@ -952,8 +960,8 @@ export default function TerminalAI({ onClose } = {}) {
       }
       // Strip internal scratchpad, chain-of-thought, or constraints reflection leaks
       finalResponse = finalResponse
-        .replace(/["']?\s*[-–—*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '')
-        .replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–—*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1')
+        .replace(/["']?\s*[-–\u2014*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '')
+        .replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–\u2014*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1')
         .replace(/^["']|["']$/g, '')
         .trim();
 
@@ -1129,7 +1137,7 @@ export default function TerminalAI({ onClose } = {}) {
     sendMessage(cmd);
   };
 
-  // FIX M4: paperclip handler — read text/code files as text and images as
+  // FIX M4: paperclip handler - read text/code files as text and images as
   // base64 data URLs, cap total size, show friendly message for PDFs.
   const MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024;
   const MAX_ATTACHMENTS = 5;
@@ -1189,7 +1197,7 @@ export default function TerminalAI({ onClose } = {}) {
     if (files.length === 0) return;
     setAttachError('');
 
-    // PDFs would need pdf.js (not installed) — friendly message instead.
+    // PDFs would need pdf.js (not installed) - friendly message instead.
     if (files.some(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name))) {
       setAttachError('Lampiran PDF belum didukung. Silakan lampirkan file teks/kode atau gambar.');
       return;

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * SERVER-SIDE MEMORY & HISTORY — port dari proyek chatbot (src/memory.ts + db.ts)
+ * SERVER-SIDE MEMORY & HISTORY - port dari proyek chatbot (src/memory.ts + db.ts)
  * ============================================================================
  * Yang dibawa dari chatbot:
  *   - messages   : riwayat percakapan penuh per-sesi (server-side, bukan hanya client)
@@ -163,7 +163,7 @@ export async function countMessages(sessionId) {
 }
 
 // ---------------------------------------------------------------------------
-// Ambil item memori jangka-panjang (ai_memories — sudah ada di portfolio)
+// Ambil item memori jangka-panjang (ai_memories - sudah ada di portfolio)
 // ---------------------------------------------------------------------------
 export async function fetchMemories(limit = 25) {
   const res = await sbFetch(`ai_memories?select=fact_text,created_at&order=created_at.desc&limit=${limit}`, {

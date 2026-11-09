@@ -89,7 +89,7 @@ ALTER TABLE public.ai_memories ENABLE ROW LEVEL SECURITY;
 
 -- RAG memory writes are trusted ONLY from the serverless function
 -- (service_role). Anonymous AND authenticated INSERT are revoked to prevent
--- prompt/RAG poisoning — anyone with a Supabase account could otherwise plant
+-- prompt/RAG poisoning - anyone with a Supabase account could otherwise plant
 -- false "facts" that the AI repeats. Writes go through /api/save-memory.
 DROP POLICY IF EXISTS "Allow service role insert memory" ON public.ai_memories;
 CREATE POLICY "Allow service role insert memory"
@@ -459,7 +459,7 @@ ON public.ai_memories (created_at DESC)
 WHERE fact_text LIKE '%[OMNIROUTE_TUNNEL%';
 
 -- ============================================================================
--- 9. MAINTENANCE NOTE (pg_cron TTL — Optional but Recommended)
+-- 9. MAINTENANCE NOTE (pg_cron TTL - Optional but Recommended)
 -- ============================================================================
 -- To prevent unbounded growth of portfolio_telemetry, schedule a cleanup job:
 -- ============================================================================

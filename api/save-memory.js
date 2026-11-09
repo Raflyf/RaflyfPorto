@@ -41,7 +41,7 @@ loadLocalEnv();
 
 // Trusted client IP: prefer Vercel's trusted header, else the LAST element of
 // x-forwarded-for (the value appended by the outermost trusted proxy), else the
-// raw socket address. Never trust the first x-forwarded-for segment — clients
+// raw socket address. Never trust the first x-forwarded-for segment - clients
 // can spoof it to bypass per-IP rate limits.
 function getClientIp(req) {
   const trusted = req.headers['x-vercel-forwarded-for'];
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ success: false, message: 'Method tidak diizinkan.' });
 
   // ========================================================================
-  // SECURITY GATE (fix audit 25 Sep — RAG POISONING):
+  // SECURITY GATE (fix audit 25 Sep - RAG POISONING):
   // Sebelumnya origin hanya di-set sebagai header CORS, TIDAK PERNAH dicek.
   // Akibatnya curl/script dari mana pun bisa POST fakta palsu ke ai_memories,
   // dan AI membacanya kembali saat menjawab pengunjung (terbukti live: fakta

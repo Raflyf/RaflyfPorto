@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * AI MULTI-PROVIDER ENGINE — SINKRONISASI LENGKAP DARI PROYEK CHATBOT
+ * AI MULTI-PROVIDER ENGINE - SINKRONISASI LENGKAP DARI PROYEK CHATBOT
  * ============================================================================
  * Arsitektur failover cerdas 8-Tier dengan Balapan Model (Staggered Model Racing),
  * Rotasi Key Round-Robin, Circuit Breaker Adaptif (TPM vs TPD), Prompt Caching,
