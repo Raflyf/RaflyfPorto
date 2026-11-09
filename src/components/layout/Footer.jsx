@@ -21,7 +21,7 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -51,7 +51,10 @@ export default function Footer() {
           </Reveal>
 
           {/* Social Links */}
-          <Reveal y={24} delay={0.06} className="flex items-center gap-3">
+          <Reveal y={24} delay={0.06} className="flex flex-wrap items-center justify-center gap-3">
+            <a href="/contoh-portfolio-react-tailwind" className="text-sm text-cyan-300 hover:text-white underline underline-offset-4 px-2 py-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">
+              {language === 'id' ? 'Studi kasus React & Tailwind' : 'React & Tailwind case study'}
+            </a>
             {socialLinks.map(({ icon: Icon, label, href, color }) => (
               <a
                 key={label}

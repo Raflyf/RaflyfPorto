@@ -79,7 +79,19 @@ function isSaveLimited(clientIp) {
 const MAX_BODY_BYTES = 50 * 1024; // 50KB
 
 export default async function handler(req, res) {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://raflyfirmansyah-portofolio.vercel.app';
+  const reqOrigin = String(req.headers.origin || '').trim();
+  const allowList = [
+    process.env.ALLOWED_ORIGIN,
+    'https://raflyf.vercel.app',
+    'https://raflyfirmansyah-portofolio.vercel.app', // Izin transisi migrasi.
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ].filter(Boolean);
+  res.setHeader('Vary', 'Origin');
+  if (reqOrigin && !allowList.includes(reqOrigin)) {
+    return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
+  }
+  const allowedOrigin = reqOrigin || process.env.ALLOWED_ORIGIN || 'https://raflyf.vercel.app';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -99,14 +111,7 @@ export default async function handler(req, res) {
   // bisa memalsukan Origin ke nilai yang tidak mereka miliki.
   // (Defense-in-depth: origin + rate limit + content guard tetap berlaku.)
   // ========================================================================
-  const reqOrigin = String(req.headers.origin || '').trim();
-  const allowList = [
-    process.env.ALLOWED_ORIGIN,
-    'https://raflyfirmansyah-portofolio.vercel.app',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-  ].filter(Boolean);
-  if (!reqOrigin || !allowList.includes(reqOrigin)) {
+  if (!reqOrigin) {
     return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
   }
 

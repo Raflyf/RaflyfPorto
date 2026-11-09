@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard
 
-Sitemap: https://raflyfirmansyah-portofolio.vercel.app/sitemap.xml
+Sitemap: https://raflyf.vercel.app/sitemap.xml

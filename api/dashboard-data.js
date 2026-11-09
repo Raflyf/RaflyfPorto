@@ -40,7 +40,19 @@ function loadLocalEnv() {
 loadLocalEnv();
 
 export default async function handler(req, res) {
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://raflyfirmansyah-portofolio.vercel.app';
+  const requestOrigin = req.headers.origin || '';
+  const allowedOrigins = [
+    process.env.ALLOWED_ORIGIN,
+    'https://raflyf.vercel.app',
+    'https://raflyfirmansyah-portofolio.vercel.app', // Izin transisi migrasi.
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ].filter(Boolean);
+  res.setHeader('Vary', 'Origin');
+  if (requestOrigin && !allowedOrigins.includes(requestOrigin)) {
+    return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
+  }
+  const allowedOrigin = requestOrigin || process.env.ALLOWED_ORIGIN || 'https://raflyf.vercel.app';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');

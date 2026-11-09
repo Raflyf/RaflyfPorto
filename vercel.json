@@ -1,7 +1,19 @@
 {
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path((?!google462b52e1b6cba12b\\.html$).*)",
+      "has": [{ "type": "host", "value": "raflyfirmansyah-portofolio.vercel.app" }],
+      "destination": "https://raflyf.vercel.app/:path",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    { "source": "/contoh-portfolio-react-tailwind", "destination": "/contoh-portfolio-react-tailwind.html" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/((?!api|certificates|assets|favicon|robots\\.txt|sitemap\\.xml|google).*$)", "destination": "/index.html" }
+    { "source": "/(dashboard|archive-v1|archive-v1/dashboard|preview-stitch|preview-stitch/dashboard)(/?)", "destination": "/index.html" }
   ],
   "functions": {
     "api/chat.js": {
@@ -12,6 +24,10 @@
     }
   },
   "headers": [
+    {
+      "source": "/(dashboard|archive-v1/dashboard|preview-stitch/dashboard)(/?)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    },
     {
       "source": "/(.*)",
       "headers": [

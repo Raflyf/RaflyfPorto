@@ -95,6 +95,29 @@ npm run preview
 
 ---
 
+## SEO dan domain utama
+
+Situs utama: https://raflyf.vercel.app/. Domain sebelumnya dipertahankan sebagai redirect permanen ke path yang sama, bukan diputus atau diarahkan semua ke homepage. File verifikasi Google dikecualikan dari redirect agar kedua property tetap bisa diverifikasi.
+
+- `npm run build` membangun Vite ke `dist/`, lalu merender komponen portfolio asli ke HTML. Pengunjung dan crawler memperoleh profil, H1, proyek, dan tautan sebelum JavaScript berjalan. Client saat ini me-mount ulang snapshot yang sama; kontrol input dinonaktifkan sampai React siap supaya isian pengguna tidak hilang. Hydration ditunda sampai state browser tersimpan memiliki render awal deterministik.
+- `public/robots.txt`, `public/sitemap.xml`, dan file verifikasi Google merupakan berkas yang diterbitkan. Salinan root robots/sitemap dipertahankan dan diuji agar tidak menyimpang.
+- Sitemap memuat homepage dan `/contoh-portfolio-react-tailwind`, bukan dashboard atau alias duplikat. Tanggal `lastmod` yang tidak dapat dipastikan dihapus, bukan diganti pada setiap deploy.
+- Halaman studi kasus berisi struktur, screenshot desktop/mobile, keputusan teknis, demo, dan repo. Source code ini merupakan portfolio aktif, bukan janji template satu klik.
+- Rewrite SPA hanya berlaku pada route terdaftar. URL yang tidak ada tetap HTTP 404.
+- `/dashboard`, `/archive-v1/dashboard`, dan `/preview-stitch/dashboard` memperoleh `X-Robots-Tag: noindex`; robots mengizinkan crawl agar aturan tersebut bisa dibaca. `noindex` bukan pengganti autentikasi.
+- Canonical, OpenGraph, JSON-LD, tautan demo, serta origin API menggunakan domain utama baru. Domain lama hanya dipertahankan untuk migrasi.
+
+Pemeriksaan:
+
+```bash
+npm run build
+npm test
+```
+
+Setelah deploy, verifikasi property baru `https://raflyf.vercel.app/` di Search Console, kirim `https://raflyf.vercel.app/sitemap.xml`, lalu inspeksi URL homepage dan studi kasus. Pertahankan verifikasi property lama dan gunakan Change of Address jika tersedia untuk kedua property. Jangan hapus redirect lama; Google menyarankan minimal satu tahun. Status alternate canonical dan page with redirect normal untuk alias, bukan target agar semua URL terindeks. Ranking/indexing tidak dijamin, dan laporan Google tidak berubah seketika.
+
+Panduan Google: https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes
+
 ## Lisensi
 
 Proyek ini didistribusikan di bawah lisensi [MIT License](https://opensource.org/licenses/MIT).

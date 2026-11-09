@@ -60,6 +60,7 @@ class ErrorBoundary extends Component {
   }
 }
 
+// ponytail: build HTML is a readable snapshot; hydrate only after persisted browser state has a deterministic first render.
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>

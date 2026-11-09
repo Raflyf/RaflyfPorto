@@ -22,7 +22,7 @@ export default function StitchPortfolio() {
   useEffect(() => {
     telemetry.init();
     telemetry.logEvent('page_view', 'portfolio_home', 'Membuka Beranda Portofolio Liquid Glass');
-    document.title = 'Rafly Firmansyah — AI Engineering & Full-Stack Research Portfolio';
+    document.title = 'Rafly Firmansyah | Portofolio Web Developer & AI';
   }, []);
 
   return (

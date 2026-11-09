@@ -176,7 +176,7 @@ export const PROJECTS_DATA_I18N = {
       ],
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
       githubUrl: "https://github.com/Raflyf/web-portofolio",
-      demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
+      demoUrl: "https://raflyf.vercel.app/",
       stars: 2
     }
   ],
@@ -317,7 +317,7 @@ export const PROJECTS_DATA_I18N = {
       ],
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
       githubUrl: "https://github.com/Raflyf/web-portofolio",
-      demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
+      demoUrl: "https://raflyf.vercel.app/",
       stars: 2
     }
   ]

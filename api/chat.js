@@ -141,6 +141,7 @@ Wajib jadikan rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dil
 - Cisco PCAP (Certified Associate in Python Programming) - 2024: Python Institute / Cisco Networking Academy.`;
 
   const contactSection = `[KONTAK RESMI]:
+- Website: https://raflyf.vercel.app/
 - GitHub: https://github.com/Raflyf
 - Email: mailto:raflyfirmansyah02@gmail.com
 - WhatsApp: https://wa.me/628991333323`;
@@ -2610,7 +2611,8 @@ export default async function handler(req, res) {
   // CORS: allowlist eksplisit — jangan pernah echo origin arbitrer dengan credentials
   const ALLOWED_ORIGINS = [
     process.env.ALLOWED_ORIGIN,
-    'https://raflyfirmansyah-portofolio.vercel.app',
+    'https://raflyf.vercel.app',
+    'https://raflyfirmansyah-portofolio.vercel.app', // Izin transisi migrasi.
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:3877',
@@ -2619,9 +2621,12 @@ export default async function handler(req, res) {
     'http://127.0.0.1:3000'
   ].filter(Boolean);
   const requestOrigin = (req.headers && req.headers.origin) ? req.headers.origin : '';
-  const origin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0];
-  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Vary', 'Origin');
+  if (requestOrigin && !ALLOWED_ORIGINS.includes(requestOrigin)) {
+    return res.status(403).json({ error: 'Origin tidak diizinkan.' });
+  }
+  const origin = requestOrigin || process.env.ALLOWED_ORIGIN || 'https://raflyf.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -3211,7 +3216,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // 6. Strip URL fiktif / dikarang model (Anti-Hallucination URL Forgery Filter)
       // Whitelist: domain resmi Rafly + domain dokumentasi resmi terpercaya
       const officialDomains = [
-        'github.com', 'raflyfirmansyah-portofolio.vercel.app', 'bnsp.go.id', 'mikrotik.com', 'netacad.com',
+        'github.com', 'raflyf.vercel.app', 'raflyfirmansyah-portofolio.vercel.app', 'bnsp.go.id', 'mikrotik.com', 'netacad.com',
         'wa.me', 'wikipedia.org', 'wikimedia.org', 'huggingface.co', 'arxiv.org',
         'openai.com', 'anthropic.com', 'deepmind.google', 'deepseek.com', 'mistral.ai', 'meta.com', 'nvidia.com', 'microsoft.com'
       ];
@@ -3567,7 +3572,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${orKey}`,
-              'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+              'HTTP-Referer': 'https://raflyf.vercel.app/',
               'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
             },
             body: JSON.stringify({
