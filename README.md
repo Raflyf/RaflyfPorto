@@ -88,7 +88,7 @@ npm run preview
 | Nama | Deskripsi |
 | :--- | :--- |
 | `SUPABASE_URL` | URL endpoint Supabase untuk fungsi serverless. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Kunci privat utama** — hanya digunakan fungsi serverless. Dilarang diekspos ke client. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Kunci privat utama** hanya digunakan fungsi serverless. Dilarang diekspos ke client. |
 | `ALLOWED_ORIGIN` | Domain resmi yang diizinkan dalam kebijakan CORS. |
 
 > Variabel tambahan untuk integrasi AI dan konfigurasi internal didokumentasikan di `.env.example`.
