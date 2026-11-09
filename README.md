@@ -17,7 +17,7 @@ Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, **Fram
 
 ### Dashboard Admin
 - **Autentikasi Berlapis:** Proteksi Master PIN dengan hashing kriptografis, penguncian *brute-force*, dan token sesi yang kedaluwarsa otomatis.
-- **Data Privat:** Telemetri dan memori hanya dapat dibaca melalui fungsi serverless terverifikasi — akses publik ke tabel dinonaktifkan sepenuhnya via RLS.
+- **Data Privat:** Telemetri dan memori hanya dapat dibaca melalui fungsi serverless terverifikasi akses publik ke tabel dinonaktifkan sepenuhnya via RLS.
 - **Visualisasi Analitik:** Statistik kunjungan, tipe perangkat, interaksi kueri, dan riwayat perintah dalam grafik interaktif.
 - **Ekspor Log Terproteksi:** Unduh log aktivitas dalam format JSON/CSV dengan sanitasi karakter untuk mencegah *formula injection*.
 
