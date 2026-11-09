@@ -1,4 +1,4 @@
-# Portofolio Profesional & AI Developer Lab — Rafly Firmansyah
+# Portofolio Profesional & AI Developer Lab - Rafly Firmansyah
 
 Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** — Sarjana Komputer (S1 Informatika, Universitas Bina Sarana Informatika), Analis Program Terstandar BNSP, dan Software Engineer yang berfokus pada riset *Natural Language Processing* (NLP), *Machine Learning*, arsitektur backend, dan rekayasa web modern.
 
