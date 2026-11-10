@@ -24,6 +24,7 @@ skills-lock.json
 
 # Local utility scripts (not part of Vercel deployment)
 generate_favicons.py
+Jalankan_Lokal.bat
 prompt.md
 
 # Scratch / experimental workspace (ephemeral, not for production)
@@ -38,14 +39,12 @@ dist-v2/
 .env.local.bak_25sep
 
 .vercel
-.env*
 
 # Arsip & dokumentasi internal (dibersihkan 25 Sep - tidak di-push ke GitHub)
 archive_v1/
 backup_v1/
 AUDIT_REPORT.md
 DOCUMENTATION.md
-prompt.md
 database/fix_*.sql
 database/EMERGENCY_*.sql
 database/cleanup_*.sql
@@ -78,7 +77,6 @@ __pycache__/
 .ruff_cache/
 
 # Logs
-*.log
 logs/
 
 # Git backup folders
