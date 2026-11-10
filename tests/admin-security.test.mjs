@@ -180,6 +180,23 @@ test('foreign Origin rejects before DB and even malicious body parsing', async (
   assert.equal(f.stats.calls, 0);
 });
 
+test('admin CAS keeps integer and timestamp operands valid for PostgREST', async () => {
+  const f = fixture();
+  const row = f.row();
+  row.session_token = JSON.stringify([{ hash: tokenHash(token), exp: f.time() + 86400000 }]);
+  row.session_expires_at = '2026-11-11T12:04:59.000Z';
+  row.otp_expires_at = '2026-11-10T12:10:00.000Z';
+  row.otp_blocked_until = '2026-11-10T12:07:00.000Z';
+  f.setRow(row);
+  const updated = await f.auth.patchAdminRow(row, { session_token: row.session_token });
+  assert.ok(updated);
+  const params = f.stats.authWrites.at(-1).query;
+  assert.equal(params.get('otp_attempts'), 'eq.0');
+  for (const name of ['pin_hash', 'session_token', 'session_expires_at', 'otp_expires_at', 'otp_blocked_until', 'updated_at']) {
+    assert.equal(params.get(name), `eq.${row[name]}`, name);
+  }
+});
+
 test('login migrates legacy PIN and sessions together, storing hashes only', async () => {
   const f = fixture({ row: { session_token: JSON.stringify([{ token, exp: Date.parse('2026-11-11T11:00:00Z') }]), session_expires_at: '2026-11-11T11:00:00Z' } });
   const res = await run(f, { action: 'verify_pin', pin });

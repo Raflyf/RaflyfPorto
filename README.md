@@ -147,7 +147,7 @@ Jalankan `npm run build` dan `npm test`. Runner serta bukti lokal: [benchmark be
 ## Keamanan aplikasi
 
 - Pengetahuan bersama hanya menerima penulisan sesi admin yang tervalidasi dan bertanda tangan server. Catatan pengunjung lama tetap tersimpan, tetapi tidak digunakan sebagai fakta bersama. Riwayat percakapan terikat cookie HttpOnly bertanda tangan; ID telemetri bukan kredensial.
-- Autentikasi memakai JSON POST, PIN di-hash dengan scrypt dan salt acak, sesi disimpan sebagai hash, serta perubahan PIN/OTP/logout memakai pembaruan bersyarat atomik. Format PIN lama dimigrasikan tanpa mengganti PIN. Percobaan login dibatasi per-IP, pengiriman OTP juga dibatasi global; kegagalan database menolak operasi.
+- Autentikasi memakai JSON POST, PIN di-hash dengan scrypt dan salt acak, sesi disimpan sebagai hash, serta perubahan PIN/OTP/logout memakai pembaruan bersyarat atomik. Operand filter PostgREST di-encode sebagai nilai kolom, bukan string JSON, agar integer dan timestamp tetap valid. Format PIN lama dimigrasikan tanpa mengganti PIN. Percobaan login dibatasi per-IP, pengiriman OTP juga dibatasi global; kegagalan database menolak operasi.
 - Health publik hanya menampilkan status. Data dashboard tidak disimpan dalam cache persisten browser. Pengambilan URL publik memvalidasi DNS dan setiap redirect, mengikat IP koneksi, serta membatasi waktu dan ukuran respons.
 - CSP produksi menolak skrip inline dan membatasi koneksi browser ke origin yang digunakan. Gaya inline tetap diperlukan untuk animasi. Tema sebelum paint memakai skrip same-origin.
 - `npm test` menguji regresi memakai fixture terisolasi, bukan menulis data pengujian ke produksi. Hasil tes bukan jaminan tanpa celah atau bukti ketahanan DDoS.

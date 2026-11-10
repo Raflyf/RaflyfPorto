@@ -56,7 +56,7 @@ export async function patchAdminRow(row, changes, { activeOtp = false } = {}) {
   const filters = ['id=eq.master_auth'];
   for (const name of ['pin_hash', 'session_token', 'session_expires_at', 'otp_code_hash', 'otp_expires_at', 'otp_attempts', 'otp_blocked_until', 'updated_at']) {
     const value = row[name];
-    filters.push(`${name}=${value == null ? 'is.null' : `eq.${encodeURIComponent(JSON.stringify(String(value)))}`}`);
+    filters.push(`${name}=${value == null ? 'is.null' : `eq.${encodeURIComponent(String(value))}`}`);
   }
   if (activeOtp) filters.push(`otp_expires_at=gt.${encodeURIComponent(new Date().toISOString())}`, 'otp_attempts=lt.5');
   const updated = await databaseRequest(`admin_auth_config?${filters.join('&')}`, {
