@@ -30,6 +30,9 @@ prompt.md
 # Scratch / experimental workspace (ephemeral, not for production)
 scratch/
 
+# Security audit output (contains live exploit steps - never publish)
+PENTEST_REPORT.md
+
 # Vite build output (never commit generated artifacts)
 dist/
 dist-v2/
