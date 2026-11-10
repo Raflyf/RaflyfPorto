@@ -144,6 +144,14 @@ Sampel aktivasi tanpa throttle: terminal siap 466-554 ms pada baseline dan 483-5
 
 Jalankan `npm run build` dan `npm test`. Runner serta bukti lokal: [benchmark berpasangan](<scratch/perf-followup/paired.mjs>), [hasil final](<scratch/perf-followup/paired-matched-metrics.json>), [pemeriksaan UI](<scratch/perf-followup/ui-check.mjs>), dan [sampel aktivasi](<scratch/perf-followup/visual-activation.json>). Benchmark lama `paired-v1` tidak dipakai karena konfigurasi build belum setara.
 
+## Keamanan aplikasi
+
+- Pengetahuan bersama hanya menerima penulisan sesi admin yang tervalidasi dan bertanda tangan server. Catatan pengunjung lama tetap tersimpan, tetapi tidak digunakan sebagai fakta bersama. Riwayat percakapan terikat cookie HttpOnly bertanda tangan; ID telemetri bukan kredensial.
+- Autentikasi memakai JSON POST, PIN di-hash dengan scrypt dan salt acak, sesi disimpan sebagai hash, serta perubahan PIN/OTP/logout memakai pembaruan bersyarat atomik. Format PIN lama dimigrasikan tanpa mengganti PIN. Percobaan login dibatasi per-IP, pengiriman OTP juga dibatasi global; kegagalan database menolak operasi.
+- Health publik hanya menampilkan status. Data dashboard tidak disimpan dalam cache persisten browser. Pengambilan URL publik memvalidasi DNS dan setiap redirect, mengikat IP koneksi, serta membatasi waktu dan ukuran respons.
+- CSP produksi menolak skrip inline dan membatasi koneksi browser ke origin yang digunakan. Gaya inline tetap diperlukan untuk animasi. Tema sebelum paint memakai skrip same-origin.
+- `npm test` menguji regresi memakai fixture terisolasi, bukan menulis data pengujian ke produksi. Hasil tes bukan jaminan tanpa celah atau bukti ketahanan DDoS.
+
 ## Lisensi
 
 Proyek ini didistribusikan di bawah lisensi [MIT License](https://opensource.org/licenses/MIT).

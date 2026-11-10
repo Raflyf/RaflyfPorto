@@ -6,22 +6,7 @@
     <meta name="color-scheme" content="dark" />
 
     <!-- Theme & Clean URL pre-paint: strip '#' from URL immediately while saving initial scroll target -->
-    <script>
-      (function () {
-        try {
-          var isLegacyArchive = window.location.pathname.indexOf('/archive-v1') === 0;
-          var saved = localStorage.getItem('portfolio-theme');
-          var dark = isLegacyArchive ? (saved === 'light' ? false : true) : true; // default & Stitch routes forced to dark
-          document.documentElement.classList.toggle('dark', dark);
-          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-
-          if (window.location.hash) {
-            window.__initialTargetHash = window.location.hash.replace('#', '');
-            window.history.replaceState(null, '', window.location.href.split('#')[0]);
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
 
     <!-- SEO & OpenGraph Meta Tags -->
     <title>Rafly Firmansyah | Portofolio Web Developer & AI</title>
@@ -58,9 +43,6 @@
     <meta name="twitter:title" content="Rafly Firmansyah | Portofolio Web Developer & AI" />
     <meta name="twitter:description" content="Portofolio Rafly Firmansyah: proyek web React, riset NLP dan machine learning, sertifikasi, serta studi kasus landing page React dan Tailwind CSS." />
     <meta name="twitter:image" content="https://raflyf.vercel.app/og-cover.jpg" />
-
-    <!-- Security: Content Security Policy (dev-safe: allows Vite HMR ws://localhost) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' ws://localhost:* http://localhost:* https://api.github.com https://*.supabase.co https://formsubmit.co https://openrouter.ai https://integrate.api.nvidia.com https://api.opencode.ai https://api.minimax.io https://ollama.com https://*.trycloudflare.com https://raw.githubusercontent.com https://news.google.com https://*.wikipedia.org https://export.arxiv.org https://api.openalex.org https://huggingface.co http://localhost:11434; frame-src 'self' data: blob:; worker-src 'self' blob:;" />
 
     <!-- Google Fonts Preconnect & High-Performance Font Loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

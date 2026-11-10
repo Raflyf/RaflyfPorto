@@ -1,202 +1,28 @@
-/**
- * ============================================================================
- * VERCEL SERVERLESS FUNCTION: /api/save-memory (v1.0.0)
- * Trusted RAG memory write path.
- * The browser NEVER inserts into ai_memories directly (anon INSERT is revoked
- * to prevent RAG poisoning). This endpoint validates + sanitizes the fact and
- * writes with SUPABASE_SERVICE_ROLE_KEY.
- * ============================================================================
- */
-
-import fs from 'fs';
-import path from 'path';
-
-const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
-
-// Automatic local environment loader (reads .env.local / .env for local testing)
-function loadLocalEnv() {
-  try {
-    const envFiles = ['.env.local', '.env'];
-    for (const f of envFiles) {
-      const fullPath = path.resolve(process.cwd(), f);
-      if (fs.existsSync(fullPath)) {
-        const content = fs.readFileSync(fullPath, 'utf8');
-        content.split('\n').forEach(line => {
-          const trimmed = line.trim();
-          if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
-            const idx = trimmed.indexOf('=');
-            const k = trimmed.substring(0, idx).trim();
-            const v = trimmed.substring(idx + 1).trim().replace(/^["']|["']$/g, '');
-            if (k) {
-              process.env[k] = v;
-            }
-          }
-        });
-        break;
-      }
-    }
-  } catch (_) {}
-}
-loadLocalEnv();
-
-// Trusted client IP: prefer Vercel's trusted header, else the LAST element of
-// x-forwarded-for (the value appended by the outermost trusted proxy), else the
-// raw socket address. Never trust the first x-forwarded-for segment - clients
-// can spoof it to bypass per-IP rate limits.
-function getClientIp(req) {
-  const trusted = req.headers['x-vercel-forwarded-for'];
-  if (trusted && typeof trusted === 'string') return trusted.split(',')[0].trim();
-  const xff = req.headers['x-forwarded-for'];
-  if (xff && typeof xff === 'string') {
-    const parts = xff.split(',');
-    return (parts[parts.length - 1] || '').trim() || req.socket?.remoteAddress || 'unknown-client';
-  }
-  return req.socket?.remoteAddress || 'unknown-client';
-}
-
-// In-memory per-IP limiter (max 5 posts/minute). Best-effort fast path;
-// keeps the write path bounded against DB-write DoS on a single warm instance.
-const memorySaveCache = new Map();
-const SAVE_MAX_PER_WINDOW = 5;
-const SAVE_WINDOW_MS = 60 * 1000;
-
-function isSaveLimited(clientIp) {
-  const now = Date.now();
-  const rec = memorySaveCache.get(clientIp);
-  if (!rec || (now - rec.start) > SAVE_WINDOW_MS) {
-    memorySaveCache.set(clientIp, { count: 1, start: now });
-    if (memorySaveCache.size > 2000) {
-      for (const [k, v] of memorySaveCache.entries()) {
-        if (now - v.start > SAVE_WINDOW_MS) memorySaveCache.delete(k);
-      }
-    }
-    return false;
-  }
-  rec.count += 1;
-  return rec.count > SAVE_MAX_PER_WINDOW;
-}
-
-const MAX_BODY_BYTES = 50 * 1024; // 50KB
+import { applyCors, databaseRequest, enforceRateLimit, httpError, readJsonBody, signValue } from './_security.js';
+import { requireAdmin } from './_admin-auth.js';
 
 export default async function handler(req, res) {
-  const reqOrigin = String(req.headers.origin || '').trim();
-  const allowList = [
-    process.env.ALLOWED_ORIGIN,
-    'https://raflyf.vercel.app',
-    'https://raflyfirmansyah-portofolio.vercel.app', // Izin transisi migrasi.
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-  ].filter(Boolean);
-  res.setHeader('Vary', 'Origin');
-  if (reqOrigin && !allowList.includes(reqOrigin)) {
-    return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
-  }
-  const allowedOrigin = reqOrigin || process.env.ALLOWED_ORIGIN || 'https://raflyf.vercel.app';
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+  if (!applyCors(req, res)) return;
   if (req.method === 'OPTIONS') return res.status(200).end();
+  res.setHeader('Allow', 'POST, OPTIONS');
   if (req.method !== 'POST') return res.status(405).json({ success: false, message: 'Method tidak diizinkan.' });
-
-  // ========================================================================
-  // SECURITY GATE (fix audit 25 Sep - RAG POISONING):
-  // Sebelumnya origin hanya di-set sebagai header CORS, TIDAK PERNAH dicek.
-  // Akibatnya curl/script dari mana pun bisa POST fakta palsu ke ai_memories,
-  // dan AI membacanya kembali saat menjawab pengunjung (terbukti live: fakta
-  // uji "AUDIT_POISON_TEST_12345" tersimpan dan terulang dalam jawaban AI).
-  //
-  // Sekarang: request WAJIB membawa header Origin yang cocok dengan allowlist.
-  // Browser selalu mengirim Origin untuk cross-origin POST; script/curl tidak
-  // bisa memalsukan Origin ke nilai yang tidak mereka miliki.
-  // (Defense-in-depth: origin + rate limit + content guard tetap berlaku.)
-  // ========================================================================
-  if (!reqOrigin) {
-    return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
-  }
-
-  // Body size cap before any parsing: reject oversized payloads (413).
-  const contentLength = Number(req.headers['content-length']);
-  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-    return res.status(413).json({ success: false, message: 'Payload terlalu besar (maks 50KB).' });
-  }
-
-  // Per-IP rate limit before any DB write.
-  const clientIp = getClientIp(req);
-  if (isSaveLimited(clientIp)) {
-    return res.status(429).json({ success: false, message: 'Terlalu banyak permintaan. Coba lagi sebentar lagi.' });
-  }
-
-  const supabaseUrl = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-    if (!supabaseKey) {
-      return res.status(503).json({ success: false, message: 'Kunci otorisasi Supabase belum disetel.' });
-    }
-
-  let body = {};
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-  } catch (_) {
-    return res.status(400).json({ success: false, message: 'Payload tidak valid.' });
-  }
-
-  const rawFact = String(body.fact_text || '').trim();
-  const sessionId = String(body.session_id || '').trim();
-
-  // Structure-Aware Context Injection: ensure memories possess hierarchical metadata
-  function enrichFactWithContext(fact) {
-    const trimmed = String(fact || '').trim();
-    if (trimmed.startsWith('[Context:')) return trimmed;
-    const low = trimmed.toLowerCase();
-    let category = 'Technology > General';
-    if (/\b(llm|model|ai|gpt|claude|gemini|deepseek|nemotron|gemma|qwen|transformer|inference|prompt|rag)\b/i.test(low)) {
-      category = 'AI Systems > LLM Intelligence';
-    } else if (/\b(react|next|vite|tailwind|javascript|typescript|python|flask|api|serverless|docker|frontend|backend)\b/i.test(low)) {
-      category = 'Software Engineering > Development';
-    } else if (/\b(gpu|cuda|rtx|server|network|mikrotik|cisco|supabase|database|postgres|sql)\b/i.test(low)) {
-      category = 'Infrastructure > Systems & Networks';
-    } else if (/\b(skripsi|paper|jurnal|penelitian|akurasi|f1|dataset|covariate|drift|shingling|sbert)\b/i.test(low)) {
-      category = 'Research & Science > Academic';
-    }
-    return `[Context: ${category}] ${trimmed}`;
-  }
-
-  const factText = enrichFactWithContext(rawFact).slice(0, 1000);
-
-  // Hard bounds mirror the schema RLS guard: fact_text <= 1000, session_id <= 64.
-  if (!factText || factText.length < 5 || factText.length > 1000) {
-    return res.status(400).json({ success: false, message: 'Fakta memori harus 5-1000 karakter.' });
-  }
-  if (sessionId.length > 64) {
-    return res.status(400).json({ success: false, message: 'session_id terlalu panjang.' });
-  }
-
-  // Light content guard: refuse obvious instruction-injection markers.
-  const poisoned = /\b(ignore|override|disregard|jangan (ikuti|pedulikan)|abaikan)\b/i.test(factText);
-  if (poisoned) {
-    return res.status(400).json({ success: false, message: 'Konten memori mengandung pola yang tidak diizinkan.' });
-  }
-
-  try {
-    const resSave = await fetch(`${supabaseUrl}/rest/v1/ai_memories`, {
+    const body = readJsonBody(req, 50 * 1024);
+    if (!(await requireAdmin(req, res))) return;
+    if (Object.keys(body).some(k => !['fact_text', 'session_id'].includes(k))) throw httpError(400, 'Parameter tidak dikenal.');
+    if (typeof body.fact_text !== 'string') throw httpError(400, 'Fakta memori harus berupa teks.');
+    const fact = body.fact_text.trim();
+    if (fact.length < 5 || fact.length > 1000) throw httpError(400, 'Fakta memori harus 5-1000 karakter.');
+    if (body.session_id !== undefined && (typeof body.session_id !== 'string' || body.session_id.length > 64)) throw httpError(400, 'session_id tidak valid.');
+    if (!(await enforceRateLimit(req, res, { scope: 'admin-memory', limit: 5, windowMs: 60000 }))) return;
+    // Sign admin-approved facts; existing visitor-authored rows never become trusted by migration.
+    const rows = await databaseRequest('ai_memories', {
       method: 'POST',
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        fact_text: factText,
-        session_id: sessionId || null,
-        created_at: new Date().toISOString()
-      })
+      body: JSON.stringify({ fact_text: fact, session_id: `trusted_v1:${signValue('shared-memory:v1', fact)}`, created_at: new Date().toISOString() }),
     });
-    if (resSave.ok) {
-      return res.status(200).json({ success: true });
-    }
-    return res.status(502).json({ success: false, message: 'Gagal menyimpan memori.' });
-  } catch (err) {
-    return res.status(502).json({ success: false, message: 'Gagal menyimpan memori.' });
+    if (!Array.isArray(rows) || rows.length !== 1) throw httpError(502, 'Gagal menyimpan memori.');
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(error.statusCode || 502).json({ success: false, message: error.statusCode ? error.message : 'Gagal menyimpan memori.' });
   }
 }

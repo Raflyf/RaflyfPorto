@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
+import { isIP } from 'node:net';
+import { promisify } from 'node:util';
 
 const canonical = 'https://raflyf.vercel.app';
 const legacy = 'https://raflyfirmansyah-portofolio.vercel.app';
@@ -18,7 +20,8 @@ function loadHandler(file, env = {}) {
     throw new Error('External effect forbidden in offline origin tests');
   };
   const context = {
-    crypto, path, Buffer, URL, AbortController,
+    crypto, path, Buffer, URL, AbortController, AbortSignal, isIP, promisify,
+    fetchPublic: forbidden, isSafePublicUrl: () => false,
     process: { env: { ...env }, cwd: () => 'offline-fixture' },
     fs: { existsSync: () => false, readFileSync: forbidden },
     fetch: forbidden, setTimeout: forbidden, clearTimeout() {},
@@ -29,13 +32,15 @@ function loadHandler(file, env = {}) {
     ${read(file).replace(/^import[\s\S]*?;\n/gm, '').replace(/^export (?:default )?/gm, '')}
     return { ${exports.join(', ')} };
   })()`, context, { filename: file });
+  Object.assign(context, load('api/_security.js', ['databaseRequest', 'databaseConfig', 'httpError', 'applyCors', 'readJsonBody', 'getClientIp', 'enforceRateLimit', 'safeEqual', 'signValue', 'chatSession', 'readResponseText']));
+  Object.assign(context, load('api/_admin-auth.js', ['readAdminRow', 'patchAdminRow', 'hashPin', 'verifyPin', 'hashToken', 'activeSessions', 'requireAdmin']));
   if (file === 'chat') {
     Object.assign(context, load('api/_providers.js', ['aiChat', 'providerStatus', 'AI_CONFIG', 'AI_MODELS']));
     Object.assign(context, load('src/data.js', ['PROJECTS_DATA_I18N']));
-    const memory = load('api/_memory.js', ['saveMessage', 'getContext', 'saveSummary', 'saveCorrection', 'countMessages', 'isResetCommand']);
+    const memory = load('api/_memory.js', ['saveMessage', 'getContext', 'saveSummary', 'fetchMemories', 'countMessages', 'isResetCommand']);
     Object.assign(context, {
       memSaveMessage: memory.saveMessage, memGetContext: memory.getContext,
-      memSaveSummary: memory.saveSummary, memSaveCorrection: memory.saveCorrection,
+      memSaveSummary: memory.saveSummary, fetchServerMemories: memory.fetchMemories,
       memCountMessages: memory.countMessages, isResetCommand: memory.isResetCommand,
     });
   }
@@ -89,9 +94,9 @@ for (const file of files) {
     const api = loadHandler(file, { SUPABASE_SERVICE_ROLE_KEY: 'offline-test-key' });
     const res = response();
     await api.handler({
-      method: 'POST', headers: { origin: canonical, 'content-length': '51201' }, body: {},
+      method: 'POST', headers: { origin: canonical, 'content-type': 'application/json', 'content-length': '51201' }, body: {},
     }, res);
-    assert.equal(res.statusCode, { chat: 400, 'save-memory': 413, 'dashboard-data': 401, 'admin-otp': 400 }[file]);
+    assert.equal(res.statusCode, { chat: 400, 'save-memory': 413, 'dashboard-data': 405, 'admin-otp': 413 }[file]);
     assert.equal(res.headers['Access-Control-Allow-Origin'], canonical);
     assert.equal(api.effects(), 0);
   });
@@ -120,10 +125,10 @@ test('chat health and dashboard authentication still work without Origin', async
 });
 
 test('missing Origin preserves existing POST gates without external effects', async () => {
-  for (const [file, statusCode] of [['chat', 400], ['save-memory', 403], ['dashboard-data', 401], ['admin-otp', 400]]) {
+  for (const [file, statusCode] of [['chat', 400], ['save-memory', 401], ['dashboard-data', 405], ['admin-otp', 400]]) {
     const api = loadHandler(file, { SUPABASE_SERVICE_ROLE_KEY: 'offline-test-key' });
     const res = response();
-    await api.handler({ method: 'POST', headers: {}, body: {} }, res);
+    await api.handler({ method: 'POST', headers: { 'content-type': 'application/json' }, body: {} }, res);
     assert.equal(res.statusCode, statusCode);
     assert.equal(api.effects(), 0);
   }

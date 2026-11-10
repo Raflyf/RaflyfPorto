@@ -66,24 +66,17 @@ ChartJS.register(
   Filler
 );
 
-// PIN_SALT MUST match the server salt (api/admin-otp.js PIN_SALT). The client
-// hashes the input locally before sending pin_hash to /api/admin-otp, which
-// compares SHA-256 hashes directly. Moving to server-side PBKDF is tracked
-// separately - do not change this constant without updating the server.
-const PIN_SALT = "rafly_telemetry_salt";
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
-// Single source of truth: server DB only. No per-device PIN hash is stored -
-// a stale local copy is exactly what caused different PINs on different devices.
+const CACHE_EVENTS_KEY = 'portfolio_dashboard_cached_events';
+const CACHE_MEMORIES_KEY = 'portfolio_dashboard_cached_memories';
 
-// Shared Supabase config (single source of truth, see src/lib/supabase.js).
-// FAIL-CLOSED: no hardcoded key fallback. The dashboard reads telemetry via
-// /api/dashboard-data; direct Supabase writes (ping test) only use env config.
-
-async function sha256(message) {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+function storedAdminSession() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem(SESSION_AUTH_KEY) || 'null');
+    const expiry = Number(session?.expires_at) || Number(session?.timestamp) + 24 * 60 * 60 * 1000;
+    return session?.auth && /^adm_[a-f0-9]{64}$/.test(session.session_token || '') && expiry > Date.now()
+      ? { ...session, expires_at: expiry } : null;
+  } catch { return null; }
 }
 
 // 16 Individual AI Models Definition (Sinkron dengan Rantai 8-Tier SOTA Pool)
@@ -393,26 +386,10 @@ const alwaysShowDataLabelPlugin = {
 export default function Dashboard({ isStitch = true } = {}) {
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
 
-  // Authentication State with Instant Synchronous Session Restore (Eliminates PIN Screen Flash on Refresh)
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const session = sessionStorage.getItem(SESSION_AUTH_KEY);
-      if (session) {
-        const parsed = JSON.parse(session);
-        if (parsed && parsed.auth) {
-          return true;
-        }
-      }
-    } catch {
-      // Ignore JSON parse error
-    }
-    return false;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => typeof window !== 'undefined' && Boolean(storedAdminSession()));
   const [pinInput, setPinInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [lockoutSeconds, setLockoutSeconds] = useState(0);
-  const failedAttemptsRef = useRef(0);
 
   // Modals State
   const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
@@ -431,34 +408,9 @@ export default function Dashboard({ isStitch = true } = {}) {
   const [confirmPinChange, setConfirmPinChange] = useState('');
   const [changePinMessage, setChangePinMessage] = useState('');
 
-  const CACHE_EVENTS_KEY = 'portfolio_dashboard_cached_events';
-  const CACHE_MEMORIES_KEY = 'portfolio_dashboard_cached_memories';
-
-  // Telemetry & DB State with Instant SWR (Stale-While-Revalidate) Cache
-  const [events, setEvents] = useState(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_EVENTS_KEY);
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [memories, setMemories] = useState(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_MEMORIES_KEY);
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [isLoading, setIsLoading] = useState(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_EVENTS_KEY);
-      return !cached || JSON.parse(cached).length === 0;
-    } catch {
-      return true;
-    }
-  });
+  const [events, setEvents] = useState([]);
+  const [memories, setMemories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLiveConnected, setIsLiveConnected] = useState(true);
 
   // Range Filters
@@ -526,21 +478,10 @@ export default function Dashboard({ isStitch = true } = {}) {
     telemetry.init();
   }, []);
 
-  // 1. Session Auth Expiry Check
   useEffect(() => {
-    try {
-      const session = sessionStorage.getItem(SESSION_AUTH_KEY);
-      if (!session) {
-        setIsAuthenticated(false);
-      } else {
-        const parsed = JSON.parse(session);
-        if (!parsed || !parsed.auth) {
-          setIsAuthenticated(false);
-        }
-      }
-    } catch {
-      setIsAuthenticated(false);
-    }
+    localStorage.removeItem(CACHE_EVENTS_KEY);
+    localStorage.removeItem(CACHE_MEMORIES_KEY);
+    if (!storedAdminSession()) clearAdminSession();
   }, []);
 
   // Lockout Countdown Timer
@@ -582,154 +523,102 @@ export default function Dashboard({ isStitch = true } = {}) {
   // cleaned up on unmount (no leaked setTimeout / dangling fetch callbacks).
   const timeoutsRef = useRef([]);
   const abortControllerRef = useRef(null);
+  const authGenerationRef = useRef(0);
+  const mountedRef = useRef(true);
+  const clearAdminSession = () => {
+    authGenerationRef.current += 1;
+    sessionStorage.removeItem(SESSION_AUTH_KEY);
+    localStorage.removeItem(CACHE_EVENTS_KEY);
+    localStorage.removeItem(CACHE_MEMORIES_KEY);
+    timeoutsRef.current.forEach(timer => clearTimeout(timer));
+    timeoutsRef.current = [];
+    abortControllerRef.current?.abort();
+    watermarkRef.current = '';
+    eventsRef.current = [];
+    memoriesRef.current = [];
+    isFetchingRef.current = false;
+    setEvents([]);
+    setMemories([]);
+    setIsAuthenticated(false);
+    setIsLiveConnected(false);
+    setIsLoading(false);
+    setPinInput('');
+    setCurrentPinChange('');
+    setNewPinChange('');
+    setConfirmPinChange('');
+    setOtpInput('');
+    setNewPinInput('');
+    setIsChangePinOpen(false);
+    setIsForgotPinOpen(false);
+    setOtpStep(1);
+    setOtpMessage('');
+    setChangePinMessage('');
+  };
+
+  const handleLogout = async () => {
+    const session = storedAdminSession();
+    clearAdminSession();
+    if (!session) return;
+    try {
+      const res = await fetch('/api/admin-otp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': session.session_token },
+        body: JSON.stringify({ action: 'logout' }),
+      });
+      if (!res.ok && res.status !== 401) throw new Error('Sesi server belum berhasil diakhiri.');
+    } catch {
+      setAuthError('Logout lokal selesai, tetapi sesi server belum terhapus. Coba lagi saat koneksi pulih.');
+    }
+  };
+
   const fetchTelemetryData = useMemo(() => {
-    const run = async (isRetry = false) => {
-      if (isFetchingRef.current) return; // skip if already in flight
+    const run = async () => {
+      const session = storedAdminSession();
+      if (!session) { clearAdminSession(); return; }
+      if (isFetchingRef.current) return;
+      const generation = authGenerationRef.current;
       isFetchingRef.current = true;
       setIsLoading(true);
-      let loadedEvents = [];
-      let loadedMemories = [];
-
-      // FIX M3: cancel any previous in-flight request before starting a new one.
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-      abortControllerRef.current = new AbortController();
-
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       try {
-        // SECURE: telemetry + memories are private (RLS) and read via the
-        // serverless endpoint /api/dashboard-data with the admin session token.
-        const sessionRaw = sessionStorage.getItem(SESSION_AUTH_KEY);
-        let sessionToken = '';
-        let sessionObj = null;
-        try {
-          sessionObj = JSON.parse(sessionRaw || '{}');
-          if (sessionObj?.session_token) sessionToken = sessionObj.session_token;
-        } catch {}
-
-        const sinceParam = watermarkRef.current ? `?since=${encodeURIComponent(watermarkRef.current)}` : '';
-        const dataRes = await fetch(`/api/dashboard-data${sinceParam}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'X-Admin-Token': sessionToken
-          },
-          signal: abortControllerRef.current.signal
+        const since = watermarkRef.current ? `?since=${encodeURIComponent(watermarkRef.current)}` : '';
+        const res = await fetch(`/api/dashboard-data${since}`, {
+          method: 'GET', headers: { Accept: 'application/json', 'X-Admin-Token': session.session_token },
+          signal: controller.signal,
         });
-
-        if (dataRes.ok) {
-          const payload = await dataRes.json();
-          if (payload && payload.incremental) {
-            loadedEvents = mergeById(eventsRef.current, payload.events);
-            loadedMemories = mergeById(memoriesRef.current, payload.memories);
-          } else {
-            if (Array.isArray(payload.events)) loadedEvents = payload.events;
-            if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
-          }
-          if (payload && payload.server_max) watermarkRef.current = payload.server_max;
-          eventsRef.current = loadedEvents;
-          memoriesRef.current = loadedMemories;
-          setIsLiveConnected(true);
-        } else {
-          // FAIL-CLOSED / SESSION EXPIRED (401):
-          // Jika serverless menolak token (token kedaluwarsa 24 jam atau tertimpa perangkat lain),
-          // periksa apakah sesi baru saja dibuat (< 5 detik) untuk mencegah tendangan sesaat karena delay replikasi.
-          if (dataRes.status === 401) {
-            const sessionAge = Date.now() - (sessionObj?.timestamp || 0);
-            if (sessionAge < 5000 && !isRetry) {
-              setIsLoading(false);
-              isFetchingRef.current = false;
-              const retryTimer = setTimeout(() => {
-                run(true);
-              }, 500);
-              timeoutsRef.current.push(retryTimer);
-              return;
-            }
-
-            sessionStorage.removeItem(SESSION_AUTH_KEY);
-            setIsAuthenticated(false);
-            setAuthError(language === 'id'
-              ? 'Sesi admin telah kedaluwarsa demi keamanan (24 jam). Silakan masukkan kembali Master PIN Anda.'
-              : 'Admin session expired for security (24h). Please re-enter your Master PIN.');
-            setIsLoading(false);
-            isFetchingRef.current = false;
-            return;
-          }
-          // RLS / Kuota Egress Terlampaui (429/502/503): aktifkan fallback cache lokal
+        if (!mountedRef.current || generation !== authGenerationRef.current) return;
+        if (res.status === 401 || res.status === 403) {
+          clearAdminSession();
+          setAuthError('Sesi admin tidak valid atau telah kedaluwarsa. Silakan login ulang.');
+          return;
+        }
+        if (!res.ok) throw new Error('Data dashboard tidak dapat diverifikasi.');
+        const payload = await res.json();
+        if (!mountedRef.current || generation !== authGenerationRef.current) return;
+        if (!payload?.success || !Array.isArray(payload.events) || !Array.isArray(payload.memories)) throw new Error('Data dashboard tidak valid.');
+        const nextEvents = payload.incremental ? mergeById(eventsRef.current, payload.events) : payload.events;
+        const nextMemories = payload.incremental ? mergeById(memoriesRef.current, payload.memories) : payload.memories;
+        eventsRef.current = nextEvents;
+        memoriesRef.current = nextMemories;
+        watermarkRef.current = payload.server_max || watermarkRef.current;
+        setEvents(nextEvents);
+        setMemories(nextMemories);
+        setIsLiveConnected(true);
+      } catch (error) {
+        if (mountedRef.current && generation === authGenerationRef.current && error?.name !== 'AbortError') {
           setIsLiveConnected(false);
-        }
-
-        // SINGLE SOURCE OF TRUTH:
-        // Jika server Supabase Cloud berhasil mengembalikan data (loadedEvents.length > 0),
-        // gunakan 100% data resmi dari server tanpa mencampurkan riwayat lokal localStorage browser.
-        // Mencampurkan localStorage lokal menyebabkan angka metrik berbeda-beda antara Laptop dan HP
-        // karena setiap perangkat menyimpan ring-buffer lokal yang berbeda.
-        // localStorage HANYA digunakan sebagai fallback darurat saat perangkat sedang offline.
-        if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
-          const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
-          if (localEventsStr) {
-            try {
-              const localEvents = JSON.parse(localEventsStr);
-              if (Array.isArray(localEvents)) {
-                loadedEvents = localEvents;
-              }
-            } catch {}
-          }
-        }
-
-        if (!Array.isArray(loadedMemories) || loadedMemories.length === 0) {
-          const localMemStr = localStorage.getItem('portfolio_ai_memories');
-          if (localMemStr) {
-            try {
-              const localMems = JSON.parse(localMemStr);
-              if (Array.isArray(localMems)) {
-                loadedMemories = localMems;
-              }
-            } catch {}
-          }
-        }
-      } catch (err) {
-        // FIX M3: aborted requests (unmount / superseded) are expected; skip noise.
-        if (err && err.name === 'AbortError') return;
-        console.warn("Dashboard data fetch warning:", err);
-        setIsLiveConnected(false);
-
-        // Fallback: local storage only (offline / no session)
-        if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
-          const local = localStorage.getItem('portfolio_telemetry_events');
-          if (local) {
-            try { loadedEvents = JSON.parse(local); } catch {}
-          }
-        }
-        if (!Array.isArray(loadedMemories) || loadedMemories.length === 0) {
-          const localMem = localStorage.getItem('portfolio_ai_memories');
-          if (localMem) {
-            try { loadedMemories = JSON.parse(localMem); } catch {}
-          }
+          setEvents([]);
+          setMemories([]);
+          eventsRef.current = [];
+          memoriesRef.current = [];
+          watermarkRef.current = '';
         }
       } finally {
-        if (Array.isArray(loadedEvents) && loadedEvents.length > 0) {
-          setEvents(prev => {
-            if (prev.length === loadedEvents.length && prev[0]?.id === loadedEvents[0]?.id && prev[0]?.created_at === loadedEvents[0]?.created_at) {
-              return prev;
-            }
-            try {
-              localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 10000)));
-            } catch {}
-            return loadedEvents;
-          });
+        if (mountedRef.current && generation === authGenerationRef.current) {
+          setIsLoading(false);
+          isFetchingRef.current = false;
         }
-        if (Array.isArray(loadedMemories) && loadedMemories.length > 0) {
-          setMemories(prev => {
-            if (prev.length === loadedMemories.length && prev[0]?.id === loadedMemories[0]?.id && prev[0]?.created_at === loadedMemories[0]?.created_at) {
-              return prev;
-            }
-            try {
-              localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 10000)));
-            } catch {}
-            return loadedMemories;
-          });
-        }
-        setIsLoading(false);
-        isFetchingRef.current = false;
       }
     };
     return run;
@@ -758,7 +647,11 @@ export default function Dashboard({ isStitch = true } = {}) {
 
   // FIX M3: on unmount, clear all pending timers and abort the in-flight fetch.
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
+      authGenerationRef.current += 1;
+      isFetchingRef.current = false;
       timeoutsRef.current.forEach((t) => clearTimeout(t));
       timeoutsRef.current = [];
       if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -791,109 +684,62 @@ export default function Dashboard({ isStitch = true } = {}) {
   // 3. Login Authentication Handler
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!pinInput || lockoutSeconds > 0) return;
-
+    if (lockoutSeconds > 0) return;
+    if (!/^\d{4,8}$/.test(pinInput)) { setAuthError('PIN harus 4-8 digit angka.'); return; }
+    const generation = authGenerationRef.current;
     try {
-      const hashedInput = await sha256(pinInput + PIN_SALT);
-
-      // 1. Verifikasi HANYA ke Serverless Supabase Gateway (single source of truth).
-      //    Fallback hash lokal dihapus: ia membuat tiap device punya "PIN sendiri".
-      let sessionToken = '';
-      let serverVerified = false;
-      let serverMessage = '';
-
-      try {
-        const verifyRes = await fetch('/api/admin-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'verify_pin', pin_hash: hashedInput })
-        });
-        const verifyData = await verifyRes.json().catch(() => ({}));
-        if (verifyRes.ok && verifyData?.verified && verifyData?.session_token) {
-          sessionToken = verifyData.session_token;
-          serverVerified = true;
-        } else if (verifyData?.message) {
-          serverMessage = verifyData.message;
-        }
-      } catch {}
-
-      // 2. Login hanya jika server memverifikasi. Tanpa server = tanpa login (fail-closed).
-      if (serverVerified) {
-        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ 
-          auth: true, 
-          session_token: sessionToken, 
-          timestamp: Date.now() 
-        }));
-        setIsAuthenticated(true);
-        setAuthError('');
-        failedAttemptsRef.current = 0;
-        // Panggil langsung pemuatan data telemetri real-time
-        setTimeout(() => fetchTelemetryData(), 50);
-      } else {
-        failedAttemptsRef.current += 1;
-        if (failedAttemptsRef.current >= 5) {
-          setLockoutSeconds(60);
-          setAuthError('Terlalu banyak percobaan salah. Terkunci selama 60 detik.');
-        } else if (serverMessage) {
-          setAuthError(serverMessage);
-        } else {
-          setAuthError(`Master PIN tidak valid. Percobaan ${failedAttemptsRef.current}/5.`);
-        }
+      const res = await fetch('/api/admin-otp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify_pin', pin: pinInput }),
+      });
+      const data = await res.json();
+      if (!mountedRef.current || generation !== authGenerationRef.current) return;
+      if (!res.ok || data?.verified !== true || !/^adm_[a-f0-9]{64}$/.test(data.session_token || '')
+          || !Number.isSafeInteger(data.expires_at) || data.expires_at <= Date.now()) {
+        if (res.status === 429) setLockoutSeconds(Math.max(1, Number(data.retry_after_seconds) || 60));
+        setAuthError(data?.message || 'Autentikasi gagal. Coba lagi.');
+        return;
       }
+      sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, session_token: data.session_token, expires_at: data.expires_at }));
+      authGenerationRef.current += 1;
+      setIsAuthenticated(true);
+      setPinInput('');
+      setAuthError('');
+      setLockoutSeconds(0);
     } catch {
-      setAuthError('Kesalahan sistem kriptografi internal.');
+      setAuthError('Layanan autentikasi tidak tersedia. Coba lagi.');
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem(SESSION_AUTH_KEY);
-    setIsAuthenticated(false);
-    setPinInput('');
-    watermarkRef.current = '';
-    eventsRef.current = [];
-    memoriesRef.current = [];
-  };
-
   // 4. Change PIN Handler
-  // Server-is-source-of-truth: PIN lama diverifikasi oleh API (update_pin
-  // menolak 403 bila current_pin_hash tidak cocok). Tidak ada cek lokal.
   const handleChangePin = async (e) => {
     e.preventDefault();
     setChangePinMessage('');
-    if (newPinChange.length < 4 || newPinChange.length > 8) {
-      setChangePinMessage('PIN baru harus 4-8 digit angka (sama seperti batas server).');
+    if (!/^\d{4,8}$/.test(newPinChange) || !/^\d{4,8}$/.test(currentPinChange)) {
+      setChangePinMessage('PIN harus 4-8 digit angka.');
       return;
     }
     if (newPinChange !== confirmPinChange) {
       setChangePinMessage('Konfirmasi PIN baru tidak cocok.');
       return;
     }
-
+    const session = storedAdminSession();
+    if (!session) { clearAdminSession(); return; }
     try {
-      const currentHashed = await sha256(currentPinChange + PIN_SALT);
-
       const res = await fetch('/api/admin-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_pin', current_pin_hash: currentHashed, new_pin: newPinChange })
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': session.session_token },
+        body: JSON.stringify({ action: 'update_pin', current_pin: currentPinChange, new_pin: newPinChange }),
       });
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.success) {
-        setChangePinMessage(data.message || data.error || 'Gagal mengubah PIN di cloud.');
+      const data = await res.json();
+      if (!res.ok || data?.success !== true) {
+        if (res.status === 401) clearAdminSession();
+        setChangePinMessage(data?.message || 'Gagal mengubah PIN.');
         return;
       }
-
-      setChangePinMessage('Master PIN berhasil diperbarui di semua device!');
-      timeoutsRef.current.push(setTimeout(() => {
-        setIsChangePinOpen(false);
-        setCurrentPinChange('');
-        setNewPinChange('');
-        setConfirmPinChange('');
-        setChangePinMessage('');
-      }, 1500));
+      clearAdminSession();
+      setAuthError('Master PIN diperbarui. Silakan login dengan PIN baru.');
     } catch {
-      setChangePinMessage('Gagal mengubah PIN.');
+      setChangePinMessage('Gagal mengubah PIN. Coba lagi saat koneksi pulih.');
     }
   };
 
@@ -910,11 +756,11 @@ export default function Dashboard({ isStitch = true } = {}) {
         body: JSON.stringify({ action: 'send_otp' })
       });
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.success && (data.dispatched === true || data.pending === true)) {
         setOtpStep(2);
-        setOtpMessage('Kode OTP 6-digit berhasil dikirim ke email raflyfirmansyah02@gmail.com.');
+        setOtpMessage(data.pending ? 'OTP masih aktif. Gunakan kode sebelumnya.' : 'Permintaan OTP diterima penyedia email. Periksa inbox Anda.');
       } else {
-        setOtpMessage(data.error || 'Gagal mengirim OTP pemulihan.');
+        setOtpMessage(data.message || data.error || 'Gagal mengirim OTP pemulihan.');
       }
     } catch {
       setOtpMessage('Koneksi ke API OTP terganggu.');
@@ -926,8 +772,8 @@ export default function Dashboard({ isStitch = true } = {}) {
   const handleVerifyOtp = async () => {
     setOtpLoading(true);
     setOtpMessage('');
-    if (newPinInput.length < 4 || newPinInput.length > 8) {
-      setOtpMessage('Master PIN baru harus 4-8 digit angka (sama seperti batas server).');
+    if (!/^\d{4,8}$/.test(newPinInput) || !/^\d{6}$/.test(otpInput)) {
+      setOtpMessage('OTP harus 6 digit dan PIN baru 4-8 digit angka.');
       setOtpLoading(false);
       return;
     }
@@ -940,18 +786,10 @@ export default function Dashboard({ isStitch = true } = {}) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        // Server sudah menyimpan PIN baru (single source of truth).
-        // Tidak ada hash lokal yang ditulis - semua device memakai PIN yang sama.
-        setOtpMessage('Master PIN berhasil direset! Silakan masuk kembali.');
-        timeoutsRef.current.push(setTimeout(() => {
-          setIsForgotPinOpen(false);
-          setOtpStep(1);
-          setOtpInput('');
-          setNewPinInput('');
-          setOtpMessage('');
-        }, 2000));
+        clearAdminSession();
+        setAuthError('Master PIN direset. Silakan masuk dengan PIN baru.');
       } else {
-        setOtpMessage(data.error || 'Kode OTP salah atau kedaluwarsa.');
+        setOtpMessage(data.message || data.error || 'Kode OTP salah atau kedaluwarsa.');
       }
     } catch {
       setOtpMessage('Gagal memverifikasi OTP.');

@@ -26,6 +26,7 @@
  */
 
 import crypto from 'crypto';
+import { readResponseText } from './_security.js';
 
 // ---------------------------------------------------------------------------
 // Helpers Pembacaan Environment
@@ -410,6 +411,9 @@ const ERR_STREAM_IDLE = 'STREAM_IDLE_TIMEOUT';
 
 async function streamSse(url, headers, body, limits, extractDelta, extractUsage, signal) {
   const controller = new AbortController();
+  let reader;
+  let response;
+  let bytes = 0;
   let phaseTimeout = null;
   const abortWith = (code) => {
     if (!phaseTimeout) phaseTimeout = code;
@@ -417,9 +421,10 @@ async function streamSse(url, headers, body, limits, extractDelta, extractUsage,
   };
 
   // Dengarkan sinyal pembatalan luar (misal saat balapan model lain menang duluan)
+  const onAbort = () => abortWith('RACE_ABORTED');
   if (signal) {
     if (signal.aborted) throw new Error('RACE_ABORTED');
-    signal.addEventListener('abort', () => abortWith('RACE_ABORTED'), { once: true });
+    signal.addEventListener('abort', onAbort, { once: true });
   }
 
   let firstTimer = setTimeout(() => abortWith(ERR_NO_FIRST_TOKEN), limits.firstTokenMs);
@@ -431,25 +436,17 @@ async function streamSse(url, headers, body, limits, extractDelta, extractUsage,
   let usage;
 
   try {
-    const res = await fetch(url, {
+    const res = response = await fetch(url, {
       method: 'POST',
+      redirect: 'error',
       headers,
       body: JSON.stringify(body),
       signal: controller.signal,
     });
 
-    if (res.status === 429) {
-      let errBody = '';
-      try { errBody = await res.text(); } catch {}
-      const err = new Error(`RATE_LIMITED:${errBody.slice(0, 150)}`);
-      err.status = 429;
-      err.fullBody = errBody;
-      throw err;
-    }
-
     if (!res.ok) {
-      const errBody = await res.text().catch(() => '');
-      const err = new Error(`PROVIDER_${res.status}:${errBody.slice(0, 300)}`);
+      const errBody = await readResponseText(res);
+      const err = new Error(res.status === 429 ? `RATE_LIMITED:${errBody.slice(0, 150)}` : `PROVIDER_${res.status}:${errBody.slice(0, 300)}`);
       err.status = res.status;
       err.fullBody = errBody;
       throw err;
@@ -457,13 +454,15 @@ async function streamSse(url, headers, body, limits, extractDelta, extractUsage,
 
     if (!res.body) throw new Error('NO_STREAM_BODY');
 
-    const reader = res.body.getReader();
+    reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      bytes += value.byteLength;
+      if (bytes > 2 * 1024 * 1024) throw new Error('PROVIDER_RESPONSE_TOO_LARGE');
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() ?? '';
@@ -528,6 +527,12 @@ async function streamSse(url, headers, body, limits, extractDelta, extractUsage,
     if (firstTimer) clearTimeout(firstTimer);
     if (idleTimer) clearTimeout(idleTimer);
     clearTimeout(totalTimer);
+    signal?.removeEventListener('abort', onAbort);
+    controller.abort();
+    if (reader) {
+      await reader.cancel().catch(() => {});
+      reader.releaseLock();
+    } else if (response?.body && !response.body.locked) await response.body.cancel().catch(() => {});
   }
 }
 
@@ -558,6 +563,7 @@ function openAiUsage(json) {
 
 // 1. Adapter OpenAI-Compatible (DreamPrompting, OpenRouter, NVIDIA NIM, Groq, Dahl)
 async function openAiChat(baseUrl, key, model, messages, maxTokensOverride, extraBody = {}, totalTimeoutMs = AI_CONFIG.timeoutMs, signal) {
+  const deadline = Date.now() + totalTimeoutMs;
   const hasImage = messagesContainImage(messages);
   const connectMs = hasImage ? AI_CONFIG.visionConnectTimeoutMs : AI_CONFIG.connectTimeoutMs;
 
@@ -612,21 +618,23 @@ async function openAiChat(baseUrl, key, model, messages, maxTokensOverride, extr
     const msg = e instanceof Error ? e.message : '';
     // Non-streaming fallback jika provider menolak SSE (misal Dahl HTTP 405)
     if (msg.startsWith('PROVIDER_405') || msg.includes('NO_STREAM_BODY')) {
+      if (signal?.aborted) throw new Error('RACE_ABORTED');
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new Error('THINKING_TIMEOUT');
       const ctrl = new AbortController();
-      if (signal) signal.addEventListener('abort', () => ctrl.abort(), { once: true });
-      const timer = setTimeout(() => ctrl.abort(), totalTimeoutMs);
+      const onAbort = () => ctrl.abort();
+      signal?.addEventListener('abort', onAbort, { once: true });
+      const timer = setTimeout(() => ctrl.abort(), remaining);
       try {
         const res = await fetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
+          method: 'POST', redirect: 'error',
           headers: { ...headers, Accept: 'application/json' },
           body: JSON.stringify({ ...body, stream: false, stream_options: undefined }),
           signal: ctrl.signal,
         });
-        if (!res.ok) {
-          const t = await res.text().catch(() => '');
-          throw new Error(`HTTP_${res.status}: ${t.slice(0, 200)}`);
-        }
-        const data = await res.json();
+        const raw = await readResponseText(res);
+        if (!res.ok) throw new Error(`HTTP_${res.status}: ${raw.slice(0, 200)}`);
+        const data = JSON.parse(raw);
         const rawText = data?.choices?.[0]?.message?.content?.trim() ?? '';
         const text = cleanModelOutput(rawText);
         if (!text) throw new Error('EMPTY_RESPONSE');
@@ -638,6 +646,8 @@ async function openAiChat(baseUrl, key, model, messages, maxTokensOverride, extr
         return { text, tokens };
       } finally {
         clearTimeout(timer);
+        signal?.removeEventListener('abort', onAbort);
+        ctrl.abort();
       }
     }
     throw e;
@@ -647,7 +657,8 @@ async function openAiChat(baseUrl, key, model, messages, maxTokensOverride, extr
 // 2. Adapter Cloudflare Workers AI
 const cfKeyAccountCache = new Map();
 
-async function resolveCloudflareKey(rawKey) {
+async function resolveCloudflareKey(rawKey, timeoutMs = AI_CONFIG.connectTimeoutMs, signal) {
+  if (signal?.aborted) throw new Error('RACE_ABORTED');
   if (rawKey.includes(':')) {
     const idx = rawKey.indexOf(':');
     return {
@@ -664,13 +675,17 @@ async function resolveCloudflareKey(rawKey) {
   const cachedAcc = cfKeyAccountCache.get(token);
   if (cachedAcc) return { accountId: cachedAcc, token };
 
+  const ctrl = new AbortController();
+  const onAbort = () => ctrl.abort();
+  signal?.addEventListener('abort', onAbort, { once: true });
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch('https://api.cloudflare.com/client/v4/accounts', {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(AI_CONFIG.connectTimeoutMs),
+      headers: { Authorization: `Bearer ${token}` }, redirect: 'error', signal: ctrl.signal,
     });
+    const text = await readResponseText(res);
     if (res.ok) {
-      const data = await res.json();
+      const data = JSON.parse(text);
       const accId = data.result?.[0]?.id;
       if (accId) {
         cfKeyAccountCache.set(token, accId);
@@ -678,13 +693,18 @@ async function resolveCloudflareKey(rawKey) {
       }
     }
   } catch {}
+  finally { clearTimeout(timer); signal?.removeEventListener('abort', onAbort); ctrl.abort(); }
 
   return { accountId: '', token };
 }
 
 async function cloudflareChat(rawKey, model, messages, totalTimeoutMs = AI_CONFIG.timeoutMs, signal) {
-  const { accountId, token } = await resolveCloudflareKey(rawKey);
+  const deadline = Date.now() + totalTimeoutMs;
+  const { accountId, token } = await resolveCloudflareKey(rawKey, Math.min(AI_CONFIG.connectTimeoutMs, totalTimeoutMs), signal);
   if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID_MISSING');
+  totalTimeoutMs = deadline - Date.now();
+  if (signal?.aborted) throw new Error('RACE_ABORTED');
+  if (totalTimeoutMs <= 0) throw new Error('THINKING_TIMEOUT');
 
   // Payload byte array untuk model vision native (Llama 3.2 Vision / LLaVA)
   if (model.includes('vision') || model.includes('llava')) {
@@ -706,17 +726,20 @@ async function cloudflareChat(rawKey, model, messages, totalTimeoutMs = AI_CONFI
     if (imageBytes.length === 0) throw new Error('NO_IMAGE_DATA_FOR_VISION');
 
     const ctrl = new AbortController();
-    if (signal) signal.addEventListener('abort', () => ctrl.abort(), { once: true });
+    const onAbort = () => ctrl.abort();
+    signal?.addEventListener('abort', onAbort, { once: true });
     const timer = setTimeout(() => ctrl.abort(), totalTimeoutMs);
+    let response;
     try {
-      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
-        method: 'POST',
+      const res = response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
+        method: 'POST', redirect: 'error',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: prompt || 'Jelaskan gambar ini.', image: imageBytes }),
         signal: ctrl.signal,
       });
+      const raw = await readResponseText(res);
       if (!res.ok) throw new Error(`CF_HTTP_${res.status}`);
-      const data = await res.json();
+      const data = JSON.parse(raw);
       const rawText = (data.result?.response ?? data.result?.description)?.trim() ?? '';
       const text = cleanModelOutput(rawText);
       if (!text) throw new Error('EMPTY_RESPONSE');
@@ -728,6 +751,9 @@ async function cloudflareChat(rawKey, model, messages, totalTimeoutMs = AI_CONFI
       return { text, tokens };
     } finally {
       clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      ctrl.abort();
+      if (response?.body && !response.body.locked) await response.body.cancel().catch(() => {});
     }
   }
 
@@ -772,9 +798,14 @@ function opencodeRequestId() {
 }
 
 async function opencodeChat(_key, model, msgs, timeoutMs = AI_CONFIG.timeoutMs, signal) {
+  if (signal?.aborted) throw new Error('RACE_ABORTED');
   const controller = new AbortController();
-  if (signal) signal.addEventListener('abort', () => controller.abort(), { once: true });
+  const onAbort = () => controller.abort();
+  signal?.addEventListener('abort', onAbort, { once: true });
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let reader;
+  let response;
+  let bytes = 0;
 
   try {
     const pakaiResponses = /^muse[-_]?spark/i.test(model);
@@ -817,8 +848,8 @@ async function opencodeChat(_key, model, msgs, timeoutMs = AI_CONFIG.timeoutMs, 
       };
     }
 
-    const res = await fetch(url, {
-      method: 'POST',
+    const res = response = await fetch(url, {
+      method: 'POST', redirect: 'error',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer public',
@@ -834,11 +865,11 @@ async function opencodeChat(_key, model, msgs, timeoutMs = AI_CONFIG.timeoutMs, 
     });
 
     if (!res.ok) {
-      const teks = await res.text().catch(() => '');
+      const teks = await readResponseText(res);
       throw new Error(`PROVIDER_${res.status}:${teks.slice(0, 300)}`);
     }
 
-    const reader = res.body?.getReader();
+    reader = res.body?.getReader();
     if (!reader) throw new Error('NO_STREAM_BODY');
     const dec = new TextDecoder();
     let buf = '';
@@ -848,6 +879,8 @@ async function opencodeChat(_key, model, msgs, timeoutMs = AI_CONFIG.timeoutMs, 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      bytes += value.byteLength;
+      if (bytes > 2 * 1024 * 1024) throw new Error('PROVIDER_RESPONSE_TOO_LARGE');
       buf += dec.decode(value, { stream: true });
       const baris = buf.split('\n');
       buf = baris.pop() || '';
@@ -880,12 +913,17 @@ async function opencodeChat(_key, model, msgs, timeoutMs = AI_CONFIG.timeoutMs, 
       }
     }
 
-    reader.cancel().catch(() => {});
     const text = cleanModelOutput(out.trim());
     if (!text) throw new Error('EMPTY_REPLY');
     return { text, tokens: usageAsli ?? { prompt: 0, completion: 0, total: 0 } };
   } finally {
     clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
+    controller.abort();
+    if (reader) {
+      await reader.cancel().catch(() => {});
+      reader.releaseLock();
+    } else if (response?.body && !response.body.locked) await response.body.cancel().catch(() => {});
   }
 }
 

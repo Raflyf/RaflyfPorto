@@ -53,7 +53,7 @@ test('punctuation cleanup leaves link destinations and code samples intact', () 
 });
 
 const chat = read('api/chat.js');
-const extract = runInNewContext(chat.slice(chat.indexOf('function extractFitMarkdownContent('), chat.indexOf('function isSafePublicUrl(')) + '\nextractFitMarkdownContent;');
+const extract = runInNewContext(chat.slice(chat.indexOf('function extractFitMarkdownContent('), chat.indexOf('async function scrapeDirectWebpageContent(')) + '\nextractFitMarkdownContent;');
 
 test('HTML extraction converts em-dash entities instead of emitting mojibake', () => {
   for (const entity of ['&mdash;', '&#8212;', '&#x2014;']) {

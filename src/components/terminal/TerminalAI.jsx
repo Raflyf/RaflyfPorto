@@ -90,48 +90,6 @@ const COMMAND_REGISTRY = {
   clear: () => []
 };
 
-// Persist an explicit fact taught by the AI to Supabase ai_memories (Dual-Storage & Realtime Telemetry Sync)
-function saveAIMemory(factText, sessionId) {
-  if (!factText) return;
-  const trimmedFact = String(factText).trim().substring(0, 1000);
-  const sid = (sessionId || 'sess_anon').substring(0, 64);
-
-  // 1. Dual-Storage: Save to local storage memory cache instantly
-  try {
-    const STORAGE_MEM_KEY = 'portfolio_ai_memories';
-    const existingRaw = localStorage.getItem(STORAGE_MEM_KEY);
-    const existing = existingRaw ? JSON.parse(existingRaw) : [];
-    const newEntry = {
-      id: 'mem_' + Date.now(),
-      fact_text: trimmedFact,
-      session_id: sid,
-      type: 'Continuous RAG Knowledge',
-      created_at: new Date().toISOString()
-    };
-    if (!existing.some(e => e.fact_text === trimmedFact)) {
-      existing.unshift(newEntry);
-      localStorage.setItem(STORAGE_MEM_KEY, JSON.stringify(existing.slice(0, 200)));
-      window.dispatchEvent(new Event('telemetry_update'));
-    }
-  } catch {}
-
-  // 2. Asynchronously sync to serverless endpoint
-  try {
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 10000);
-    fetch('/api/save-memory', {
-      method: 'POST',
-      keepalive: true,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fact_text: trimmedFact,
-        session_id: sid
-      }),
-      signal: ctrl.signal
-    }).catch(() => {});
-  } catch {}
-}
-
 const CustomSelectEffort = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 208 });
@@ -883,6 +841,7 @@ export default function TerminalAI({ onClose } = {}) {
     setAttachError('');
 
     const newUserMsg = { 
+      id: crypto.randomUUID(),
       role: 'user', 
       content: userQuery, 
       attachments: currentAttachments, 
@@ -923,9 +882,9 @@ export default function TerminalAI({ onClose } = {}) {
           query: userQuery,
           model: currentChosenModel,
           reasoningEffort: effort,
-          sessionId: telemetry.sessionId || 'sess_anon',
+          sessionId: String(updatedMessages.find(m => m.role === 'user')?.id || telemetry.sessionId || 'default'),
           sessionLanguage: (typeof document !== 'undefined' && document.documentElement.lang === 'en') ? 'en' : 'id',
-          history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+          history: messages.filter(m => m.role !== 'system').slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: String(m.content || '').slice(0, 20000) })),
           attachments: payloadAttachments
         })
       });
@@ -938,26 +897,6 @@ export default function TerminalAI({ onClose } = {}) {
       }
       
       let finalResponse = data?.response || "Maaf, terjadi kesalahan atau antrean penuh.";
-      // Save continuous RAG memories (explicit facts, grounded web insights, or server-persisted facts)
-      if (data?.savedFact && typeof data.savedFact === 'string') {
-        saveAIMemory(data.savedFact, telemetry.sessionId || 'unknown');
-      } else if (Array.isArray(data?.webMemories) && data.webMemories.length > 0) {
-        const topCandidate = data.webMemories.find(w => typeof w === 'string' && w.length >= 20 && !w.startsWith('[GitHub') && !w.startsWith('[Scraped'));
-        if (topCandidate) {
-          const cleanCandidate = topCandidate.replace(/\[(?:Global Live Web\/News|Wikipedia)[^\]]*\]\s*/g, '').trim();
-          if (cleanCandidate.length >= 15 && cleanCandidate.length <= 260) {
-            saveAIMemory(`Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanCandidate}`, telemetry.sessionId || 'unknown');
-          }
-        }
-      }
-      const memoryRegex = /\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi;
-      const rawResponse = data.response || "";
-      let memoryMatch;
-      while ((memoryMatch = memoryRegex.exec(rawResponse)) !== null) {
-        if (memoryMatch[1] && memoryMatch[1].trim()) {
-          saveAIMemory(memoryMatch[1].trim(), telemetry.sessionId || 'unknown');
-        }
-      }
       // Strip internal scratchpad, chain-of-thought, or constraints reflection leaks
       finalResponse = finalResponse
         .replace(/["']?\s*[-–\u2014*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '')
