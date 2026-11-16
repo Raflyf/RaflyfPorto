@@ -35,7 +35,7 @@ export default function SkillsBento() {
   const sectionRef = useRef(null);
   const marquee1Ref = useRef(null);
   const marquee2Ref = useRef(null);
-  const [isInView, setIsInView] = useState(true);
+  const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -69,11 +69,12 @@ export default function SkillsBento() {
     if (!el1 || !el2) return;
 
     let rafId = null;
+    let initRafId = null;
     let lastTime = performance.now();
-    let half1 = el1.scrollWidth / 2;
-    let half2 = el2.scrollWidth / 2;
-    let pos1 = el1.scrollLeft || 0;
-    let pos2 = el2.scrollLeft || half2;
+    let half1 = 0;
+    let half2 = 0;
+    let pos1 = 0;
+    let pos2 = 0;
     let paused1 = false;
     let paused2 = false;
     let isVerticallyScrolling = false;
@@ -84,6 +85,12 @@ export default function SkillsBento() {
       half2 = el2.scrollWidth / 2;
       if (pos2 <= 0 && half2 > 0) pos2 = half2;
     };
+
+    initRafId = requestAnimationFrame(() => {
+      updateDimensions();
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(tick);
+    });
 
     let ro = null;
     if (typeof ResizeObserver !== 'undefined') {
@@ -156,9 +163,8 @@ export default function SkillsBento() {
       rafId = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
-
     return () => {
+      if (initRafId) cancelAnimationFrame(initRafId);
       if (rafId) cancelAnimationFrame(rafId);
       if (scrollPauseTimer) clearTimeout(scrollPauseTimer);
       if (ro) ro.disconnect();

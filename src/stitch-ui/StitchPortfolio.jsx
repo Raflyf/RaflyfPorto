@@ -11,17 +11,16 @@ import SkillsBento from '../components/sections/SkillsBento.jsx';
 import ProjectsGrid from '../components/sections/ProjectsGrid.jsx';
 import CertificatesGrid from '../components/sections/CertificatesGrid.jsx';
 import ExperienceTimeline from '../components/sections/ExperienceTimeline.jsx';
-import TerminalAI from '../components/terminal/TerminalAI.jsx';
+import DeferredTerminalAI from '../components/terminal/DeferredTerminalAI.jsx';
 import ContactSection from '../components/sections/ContactSection.jsx';
 import Footer from '../components/layout/Footer.jsx';
 import Reveal from '../components/ui/Reveal.jsx';
 
-export default function StitchPortfolio() {
+export default function StitchPortfolio({ terminalComponent = null } = {}) {
   const { t } = useLanguage();
 
   useEffect(() => {
     telemetry.init();
-    telemetry.logEvent('page_view', 'portfolio_home', 'Membuka Beranda Portofolio Liquid Glass');
     document.title = 'Rafly Firmansyah | Portofolio Web Developer & AI';
   }, []);
 
@@ -65,7 +64,7 @@ export default function StitchPortfolio() {
           </Reveal>
           
           <Reveal delay={0.08}>
-            <TerminalAI />
+            <DeferredTerminalAI eagerComponent={terminalComponent} />
           </Reveal>
         </section>
 

@@ -1,333 +1,34 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { MotionConfig, motion, AnimatePresence, useScroll } from 'framer-motion';
-import Lenis from 'lenis';
-import 'lenis/dist/lenis.css';
-import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
-import Home from './pages/Home';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Terminal } from 'lucide-react';
+const Home = React.lazy(() => import('./pages/Home'));
 // Dashboard is heavy (Chart.js) - code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 import StitchPortfolio from './stitch-ui/StitchPortfolio';
 const StitchDashboard = React.lazy(() => import('./stitch-ui/StitchDashboard'));
+const LegacyFloatingNavbar = React.lazy(() => import('./components/layout/LegacyFloatingNavbar'));
 import { useTerminal } from './context/TerminalContext.jsx';
 import { useLanguage } from './context/LanguageContext.jsx';
 import { telemetry } from './lib/telemetry';
-
-function FloatingNavbar() {
-  const { language, toggleLanguage, t } = useLanguage();
-  const [scrolled, setScrolled] = useState(false);
-  const [navVisible, setNavVisible] = useState(true);
-  const lastScrollY = useRef(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return document.documentElement.classList.contains('dark');
-  });
-  const location = useLocation();
-
-  useEffect(() => {
-    const isStitchDarkRoute =
-      location.pathname === '/' ||
-      location.pathname.startsWith('/preview-stitch') ||
-      location.pathname.includes('dashboard');
-
-    if (isStitchDarkRoute) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-      setIsDark(true);
-      return;
-    }
-
-    const applyTheme = (dark) => {
-      document.documentElement.classList.toggle('dark', dark);
-      document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-      localStorage.setItem('portfolio-theme', dark ? 'dark' : 'light');
-      setIsDark(dark);
-    };
-
-    const saved = localStorage.getItem('portfolio-theme');
-    if (saved === 'light' || saved === 'dark') {
-      applyTheme(saved === 'dark');
-    }
-  }, [location.pathname]);
-
-  const handleThemeToggle = () => {
-    const nextDark = !isDark;
-    document.documentElement.classList.toggle('dark', nextDark);
-    localStorage.setItem('portfolio-theme', nextDark ? 'dark' : 'light');
-    setIsDark(nextDark);
-    telemetry.logEvent('theme_toggle', 'mode_switch', `Ubah Mode Tema Tampilan ke ${nextDark ? 'gelap' : 'terang'}`);
-  };
-
-  useEffect(() => {
-    if (location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard')) {
-      return;
-    }
-
-    const threshold = 10;
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY;
-          const delta = currentY - lastScrollY.current;
-
-          // Always show navbar near the top of the page (< 70px)
-          if (currentY < 70) {
-            setNavVisible(true);
-          } else if (Math.abs(delta) > threshold) {
-            if (delta > 0) {
-              // Scrolling down: hide navbar unless mobile menu is open
-              if (!mobileMenuOpen) {
-                setNavVisible(false);
-              }
-            } else {
-              // Scrolling up: reveal navbar
-              setNavVisible(true);
-            }
-            lastScrollY.current = currentY;
-          }
-
-          setScrolled(currentY > 20);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [mobileMenuOpen]);
-
-  // Accessibility: Close mobile menu on Escape key press
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileMenuOpen]);
-
-  // Isolate Dashboard: Hide public floating navbar on dashboard route
-  if (location.pathname === '/dashboard') {
-    return null;
-  }
-
-  const handleBrandClick = (e) => {
-    if (location.pathname === '/') {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleNavClick = (e, href) => {
-    if (href.startsWith('/#')) {
-      e.preventDefault();
-      const id = href.replace('/#', '');
-      const el = document.getElementById(id);
-      if (el) {
-        if (window.__lenis) {
-          window.__lenis.scrollTo(el, { duration: 1.2, offset: -40 });
-        } else {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    }
-  };
-
-  const navLinks = [
-    { name: t('nav.about'), href: '/#about' },
-    { name: t('nav.skills'), href: '/#skills' },
-    { name: t('nav.projects'), href: '/#projects' },
-    { name: t('nav.certificates'), href: '/#certificates' },
-    { name: t('nav.timeline'), href: '/#timeline' },
-    { name: t('nav.lab'), href: '/#lab' },
-    { name: t('nav.contact'), href: '/#contact' },
-  ];
-
-  if (location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard')) {
-    return null;
-  }
-
-  return (
-    <header className={`fixed top-0 inset-x-0 z-50 pointer-events-none transition-transform duration-300 ease-in-out ${
-      navVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
-      <div className={`w-full pointer-events-auto px-6 lg:px-8 py-3.5 flex items-center justify-between transition-all duration-300 ${
-        scrolled || mobileMenuOpen
-          ? 'liquid-glass-nav'
-          : 'bg-transparent border-b border-transparent'
-      }`}>
-        {/* Brand / Logo - Clicking smoothly scrolls to the very top */}
-        <Link to="/" onClick={handleBrandClick} className="flex items-center gap-3 group cursor-pointer" title={t('nav.returnTopTitle')}>
-          <div className="w-9 h-9 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] group-hover:scale-105 transition-transform">
-            <span className="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">RF</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base font-bold text-zinc-900 dark:text-white tracking-tight leading-snug group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
-              Rafly Firmansyah
-            </span>
-            <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 leading-none flex items-center gap-1.5 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-              {t('nav.onlineStatus')}
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1.5">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => {
-                handleNavClick(e, link.href);
-                telemetry.logEvent('nav_click', link.href, `Navigasi Menu: ${link.name}`);
-              }}
-              className="px-4 py-2 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 liquid-press transition-all"
-            >
-              {link.name}
-            </a>
-          ))}
-        </nav>
-
-        {/* Right CTA Actions: Language Switcher + Theme Toggle + Dashboard Badge */}
-        <div className="hidden md:flex items-center gap-2.5">
-          <button
-            onClick={toggleLanguage}
-            className="px-3 py-1.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-xs font-mono font-bold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
-            aria-label={t('nav.switchLanguage')}
-            title={language === 'id' ? 'Switch language to English' : 'Ganti bahasa ke Bahasa Indonesia'}
-          >
-            <Globe className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-            <span className={language === 'id' ? 'text-cyan-600 dark:text-cyan-300 font-extrabold' : 'opacity-60'}>ID</span>
-            <span className="opacity-30">/</span>
-            <span className={language === 'en' ? 'text-cyan-600 dark:text-cyan-300 font-extrabold' : 'opacity-60'}>EN</span>
-          </button>
-
-          <button
-            onClick={handleThemeToggle}
-            className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
-            aria-label={t('nav.themeToggle')}
-            title={`${t('nav.themeToggle')} (${isDark ? t('nav.lightMode') : t('nav.darkMode')})`}
-          >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-          >
-            <Shield className="w-4 h-4" />
-            <span>{t('nav.dashboard')}</span>
-          </Link>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
-          aria-label="Menu Navigasi"
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile Menu Dropdown with Liquid Glass & Soft Frosted Dimmer */}
-      {mobileMenuOpen && (
-        <>
-          {/* Soft Frosted Backdrop Dimmer */}
-          <div 
-            onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/35 dark:bg-black/50 backdrop-blur-sm z-[-1] pointer-events-auto transition-opacity"
-            aria-hidden="true"
-          />
-
-          {/* Authentic Liquid Glass Mobile Navigation Panel */}
-          <nav 
-            role="dialog"
-            aria-modal="true"
-            className="md:hidden mx-4 mt-2 p-3.5 liquid-glass-strong glass-spring-in flex flex-col gap-1.5 pointer-events-auto"
-            aria-label="Menu Mobile"
-          >
-            {navLinks.map((link) => (
-              <button
-                key={link.name}
-                onClick={(e) => {
-                  handleNavClick(e, link.href);
-                  telemetry.logEvent('nav_click', link.href, `Navigasi Menu: ${link.name}`);
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full px-4 py-3 rounded-xl text-sm font-semibold text-zinc-800 dark:text-zinc-100 hover:text-zinc-950 dark:hover:text-white hover:bg-white/25 dark:hover:bg-white/10 active:bg-white/35 dark:active:bg-white/15 liquid-press transition-all text-left flex items-center justify-between cursor-pointer"
-              >
-                <span>{link.name}</span>
-                <span className="text-zinc-400 dark:text-zinc-400 text-xs">→</span>
-              </button>
-            ))}
-
-            <div className="h-px bg-zinc-300/40 dark:bg-white/10 my-1 mx-2" />
-
-            {/* Mobile Language Toggle */}
-            <button
-              onClick={() => {
-                toggleLanguage();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold liquid-glass-inset text-zinc-800 dark:text-zinc-200 hover:bg-white/30 dark:hover:bg-white/10 active:bg-white/40 dark:active:bg-white/15 liquid-press transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                <span>{t('nav.switchLanguage')}</span>
-              </div>
-              <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-300">
-                {language === 'id' ? 'Bahasa Indonesia (ID)' : 'English (EN)'}
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                handleThemeToggle();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold liquid-glass-inset text-zinc-800 dark:text-zinc-200 hover:bg-white/30 dark:hover:bg-white/10 active:bg-white/40 dark:active:bg-white/15 liquid-press transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                {isDark ? <Sun className="w-4 h-4 text-amber-500 dark:text-cyan-400" /> : <Moon className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />}
-                <span>{t('nav.themeToggle')}</span>
-              </div>
-              <span className="text-xs font-mono font-medium text-zinc-600 dark:text-zinc-400">
-                {isDark ? t('nav.darkMode') : t('nav.lightMode')}
-              </span>
-            </button>
-
-            <Link
-              to="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold bg-emerald-500/20 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/30 dark:border-emerald-500/40 liquid-press transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>{t('nav.dashboardFull')}</span>
-              </div>
-              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">LIVE</span>
-            </Link>
-          </nav>
-        </>
-      )}
-    </header>
-  );
-}
+import { initLenisOnDemand, smoothScrollTo } from './lib/smooth-scroll.js';
+import { subscribeScrollProgress } from './lib/scroll-progress.js';
 
 function GlobalScrollProgressBar() {
-  const { scrollYProgress } = useScroll();
+  const barRef = useRef(null);
+
+  useEffect(() => {
+    return subscribeScrollProgress(({ progress }) => {
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${progress})`;
+      }
+    });
+  }, []);
 
   return (
-    <motion.div
+    <div
+      ref={barRef}
+      style={{ transform: 'scaleX(0)' }}
       className="fixed top-0 left-0 right-0 h-[3.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-100 origin-left shadow-[0_1px_14px_rgba(34,211,238,1),0_0_24px_rgba(99,102,241,0.7)] pointer-events-none"
-      style={{ scaleX: scrollYProgress }}
     />
   );
 }
@@ -336,32 +37,15 @@ function BackToTopButton({ t }) {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const shouldShow = (window.scrollY || 0) > 180;
-          setShowBackToTop((prev) => (prev !== shouldShow ? shouldShow : prev));
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return subscribeScrollProgress(({ scrollY }) => {
+      const shouldShow = scrollY > 180;
+      setShowBackToTop((prev) => (prev !== shouldShow ? shouldShow : prev));
+    });
   }, []);
 
   return (
     <button 
-      onClick={() => {
-        if (window.__lenis) {
-          window.__lenis.scrollTo(0, { duration: 1.2 });
-        } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }}
+      onClick={() => smoothScrollTo(0, { duration: 1.2 })}
       style={{
         opacity: showBackToTop ? 1 : 0,
         transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)',
@@ -399,47 +83,24 @@ export default function App() {
   const { t } = useLanguage();
   const location = useLocation();
 
-  // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
+  // Load smooth-wheel physics (Lenis) on demand on first wheel/scroll action so mount stays free of reflows.
+  useEffect(() => initLenisOnDemand(), []);
+
+  const prevPathnameRef = useRef(location.pathname);
+  const isLegacyArchiveRoute = location.pathname.startsWith('/archive-v1');
+
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      syncTouch: false, // JANGAN bajak touch event di HP/mobile agar native 60fps/120Hz momentum compositor tetap mulus tanpa frame drop
-      touchInertiaMultiplier: 1.0,
-      wheelMultiplier: 1.15,
-      respectReducedMotion: false,
-    });
-
-    window.__lenis = lenis;
-
-    // RAF loop with a stored id so it is actually canceled on unmount
-    // (lenis.destroy() alone does not stop our own loop).
-    let rafId = 0;
-    function raf(time) {
-      if (!document.hidden) {
-        lenis.raf(time);
-      }
-      rafId = requestAnimationFrame(raf);
+    if (!isLegacyArchiveRoute && !document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
     }
-    rafId = requestAnimationFrame(raf);
+  }, [isLegacyArchiveRoute]);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-      delete window.__lenis;
-    };
-  }, []);
-
-  // Scroll to top on route change via Lenis
+  // Scroll to top on route change via Lenis (skip redundant scrollTo(0) on initial mount)
   useEffect(() => {
-    if (window.__lenis) {
-      window.__lenis.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
+    if (prevPathnameRef.current === location.pathname) return;
+    prevPathnameRef.current = location.pathname;
+    smoothScrollTo(0, { immediate: true });
   }, [location.pathname]);
 
   // Global anchor click delegator to prevent appending '#' to browser address bar
@@ -466,12 +127,7 @@ export default function App() {
       const targetEl = document.getElementById(targetId);
 
       if (targetEl) {
-        if (window.__lenis) {
-          window.__lenis.scrollTo(targetEl, { duration: 1.2, offset: -70 });
-        } else {
-          const top = targetEl.getBoundingClientRect().top + window.scrollY - 70;
-          window.scrollTo({ top, behavior: 'smooth' });
-        }
+        smoothScrollTo(targetEl, { duration: 1.2, offset: -70 });
       }
 
       // Ensure clean URL without hash
@@ -486,93 +142,89 @@ export default function App() {
   }, [location]);
 
   return (
-    <MotionConfig reducedMotion="never">
-      {/* Root-Level Unobstructed Scroll Progress Bar (z-[100] always floats above navbar) */}
-      <GlobalScrollProgressBar />
+    <>
+        {/* Root-Level Unobstructed Scroll Progress Bar (z-[100] always floats above navbar) */}
+        <GlobalScrollProgressBar />
 
-      <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
-        <FloatingNavbar />
+        <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
+          {isLegacyArchiveRoute && (
+            <React.Suspense fallback={null}>
+              <LegacyFloatingNavbar />
+            </React.Suspense>
+          )}
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Portofolio" />
-                </div>
-              }>
-                <StitchPortfolio />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard" />
-                </div>
-              }>
-                <StitchDashboard />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/archive-v1"
-            element={<Home />}
-          />
-          <Route
-            path="/archive-v1/dashboard"
-            element={
-              <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard V1" />
-                </div>
-              }>
-                <Dashboard isStitch={false} />
-              </React.Suspense>
-            }
-          />
-          {/* Backwards compatibility aliases for preview links */}
-          <Route
-            path="/preview-stitch"
-            element={
-              <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Stitch Preview" />
-                </div>
-              }>
-                <StitchPortfolio />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/preview-stitch/dashboard"
-            element={
-              <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Stitch Dashboard" />
-                </div>
-              }>
-                <StitchDashboard />
-              </React.Suspense>
-            }
-          />
-        </Routes>
-      
-        {/* Floating Action Buttons */}
-        {!location.pathname.includes('dashboard') && (
-          <div
-            className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3"
-            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
-          >
-            <BackToTopButton t={t} />
-            
-            <TerminalLauncher t={t} />
-          </div>
-        )}
-      </div>
-    </MotionConfig>
+          <Routes>
+            <Route
+              path="/"
+              element={<StitchPortfolio />}
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <React.Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                    <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard" />
+                  </div>
+                }>
+                  <StitchDashboard />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="/archive-v1"
+              element={
+                <React.Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                    <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Archive V1" />
+                  </div>
+                }>
+                  <Home />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="/archive-v1/dashboard"
+              element={
+                <React.Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
+                    <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard V1" />
+                  </div>
+                }>
+                  <Dashboard isStitch={false} />
+                </React.Suspense>
+              }
+            />
+            {/* Backwards compatibility aliases for preview links */}
+            <Route
+              path="/preview-stitch"
+              element={<StitchPortfolio />}
+            />
+            <Route
+              path="/preview-stitch/dashboard"
+              element={
+                <React.Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                    <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Stitch Dashboard" />
+                  </div>
+                }>
+                  <StitchDashboard />
+                </React.Suspense>
+              }
+            />
+          </Routes>
+        
+          {/* Floating Action Buttons */}
+          {!location.pathname.includes('dashboard') && (
+            <div
+              className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3"
+              style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+            >
+              <BackToTopButton t={t} />
+              
+              <TerminalLauncher t={t} />
+            </div>
+          )}
+        </div>
+    </>
   );
 }

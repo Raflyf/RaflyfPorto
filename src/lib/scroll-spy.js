@@ -86,3 +86,41 @@ export function subscribeScrollSpy(callback) {
     }
   };
 }
+
+export function subscribeScrollSpyDeferred(callback) {
+  if (typeof window === 'undefined') return () => {};
+  let unsubscribe = null;
+  let io = null;
+
+  const activate = () => {
+    if (unsubscribe) return;
+    window.removeEventListener('scroll', activate);
+    window.removeEventListener('resize', activate);
+    io?.disconnect();
+    io = null;
+    unsubscribe = subscribeScrollSpy(callback);
+  };
+
+  window.addEventListener('scroll', activate, { passive: true, once: true });
+  window.addEventListener('resize', activate, { passive: true, once: true });
+
+  const heroEl = typeof document !== 'undefined' ? document.getElementById('hero') : null;
+  if (heroEl && typeof IntersectionObserver !== 'undefined') {
+    io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || entry.boundingClientRect.top < -40) {
+          activate();
+        }
+      },
+      { threshold: [0, 0.5] }
+    );
+    io.observe(heroEl);
+  }
+
+  return () => {
+    window.removeEventListener('scroll', activate);
+    window.removeEventListener('resize', activate);
+    io?.disconnect();
+    unsubscribe?.();
+  };
+}

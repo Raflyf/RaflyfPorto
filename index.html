@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
 
-    <!-- Theme & Clean URL pre-paint: strip '#' from URL immediately while saving initial scroll target -->
-    <script src="/theme-init.js"></script>
+    <!-- Theme & Clean URL pre-paint: strip '#' from URL while deferring off critical render path -->
+    <script src="/theme-init.js" defer></script>
 
     <!-- SEO & OpenGraph Meta Tags -->
     <title>Rafly Firmansyah | Portofolio Web Developer & AI</title>
@@ -44,10 +44,7 @@
     <meta name="twitter:description" content="Portofolio Rafly Firmansyah: proyek web React, riset NLP dan machine learning, sertifikasi, serta studi kasus landing page React dan Tailwind CSS." />
     <meta name="twitter:image" content="https://raflyf.vercel.app/og-cover.jpg" />
 
-    <!-- Google Fonts Preconnect & High-Performance Font Loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+    <!-- System UI & Monospace fonts load zero-latency without blocking first paint; Plus Jakarta Sans loads lazily with TerminalAI -->
 
     <!-- JSON-LD Structured Data Schema (Person & WebSite) -->
     <script type="application/ld+json">
@@ -68,6 +65,7 @@
         "url": "https://raflyf.vercel.app/",
         "image": "https://raflyf.vercel.app/og-cover.jpg",
         "jobTitle": "Software Developer & AI/ML Engineer",
+        "description": "Pengembang perangkat lunak dan mahasiswa S1 Informatika UBSI yang berfokus pada riset AI, NLP, Machine Learning, Computer Vision, serta arsitektur web modern.",
         "email": "mailto:raflyfirmansyah02@gmail.com",
         "sameAs": [
           "https://github.com/Raflyf"

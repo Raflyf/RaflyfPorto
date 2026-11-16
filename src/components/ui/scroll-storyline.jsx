@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
-import { SECTION_IDS, subscribeScrollSpy } from '../../lib/scroll-spy.js';
+import { SECTION_IDS, subscribeScrollSpyDeferred } from '../../lib/scroll-spy.js';
+import { smoothScrollTo } from '../../lib/smooth-scroll.js';
 
 export default function ScrollStoryline() {
   const { t } = useLanguage();
@@ -29,7 +30,7 @@ export default function ScrollStoryline() {
 
   useEffect(() => {
     let lastPercent = -1;
-    return subscribeScrollSpy(({ activeSection, percent, scrollY, width }) => {
+    return subscribeScrollSpyDeferred(({ activeSection, percent, scrollY, width }) => {
       if (width < 1280) return;
       if (percent !== lastPercent) {
         lastPercent = percent;
@@ -47,25 +48,21 @@ export default function ScrollStoryline() {
     setActiveSection(id);
     const el = document.getElementById(id);
     if (el) {
-      if (window.__lenis) {
-        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
-      } else {
-        const top = el.getBoundingClientRect().top + window.scrollY - 70;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      smoothScrollTo(el, { duration: 1.2, offset: -70 });
     }
   };
 
   return (
     <aside className="fixed right-5 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-2 pointer-events-auto select-none" aria-label="Navigasi Cerita">
-      <div className="flex flex-col items-center gap-2 p-1.5 rounded-full bg-[#080c18]/70 backdrop-blur-md border border-white/12 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+      <div className="flex flex-col items-center gap-0.5 p-1.5 rounded-full bg-[#080c18]/70 backdrop-blur-md border border-white/12 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
         {sections.map((sec) => {
           const isActive = activeSection === sec.id;
           return (
             <button
               key={sec.id}
+              type="button"
               onClick={(e) => scrollTo(e, sec.id)}
-              className="stitch-raw-btn group relative flex items-center justify-center p-1 rounded-full focus:outline-none focus-visible:ring-1.5 focus-visible:ring-cyan-400/80 cursor-pointer"
+              className="stitch-raw-btn group relative flex items-center justify-center w-6 h-6 rounded-full focus:outline-none focus-visible:ring-1.5 focus-visible:ring-cyan-400/80 cursor-pointer"
               aria-label={`${t('storyline.scrollTo')} ${sec.label}`}
             >
               {/* Hover / Active Tooltip with Transient Auto-Hide */}

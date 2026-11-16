@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { subscribeScrollProgress } from "../../lib/scroll-progress.js";
 import {
   ArrowRight,
   Terminal,
@@ -136,8 +136,11 @@ const STACK_BADGES = [
 ];
 
 // Isolated clock sub-component so 1-second ticks never re-render HorizonHero during scroll
+const formatClockPlaceholder = (language) =>
+  language === "id" ? "WIB (UTC+7) • --:--:--" : "UTC+7 (WIB) • --:--:--";
+
 const LiveWibClock = React.memo(function LiveWibClock({ language, active }) {
-  const [clockTime, setClockTime] = useState("");
+  const [clockTime, setClockTime] = useState(() => formatClockPlaceholder(language));
 
   useEffect(() => {
     if (!active) return;
@@ -157,13 +160,14 @@ const LiveWibClock = React.memo(function LiveWibClock({ language, active }) {
       setClockTime(`${tzLabel} • ${timeStr}`);
     };
 
-    updateClock();
+    const initialTimer = setTimeout(updateClock, 200);
     const timer = setInterval(updateClock, 1000);
     const onVisibility = () => {
       if (!document.hidden) updateClock();
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
+      clearTimeout(initialTimer);
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisibility);
     };
@@ -171,8 +175,8 @@ const LiveWibClock = React.memo(function LiveWibClock({ language, active }) {
 
   return (
     <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
-      <Clock className="w-3.5 h-3.5 text-cyan-400" />
-      <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
+      <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+      <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums inline-block min-w-[22ch]">
         {clockTime}
       </span>
     </div>
@@ -182,6 +186,8 @@ const LiveWibClock = React.memo(function LiveWibClock({ language, active }) {
 export default function HorizonHero() {
   const { language, t } = useLanguage();
   const containerRef = useRef(null);
+  const heroTextRef = useRef(null);
+  const showcaseRef = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isHeroInView, setIsHeroInView] = useState(true);
@@ -202,14 +208,18 @@ export default function HorizonHero() {
     return () => io.disconnect();
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
-
-  // Direct scroll transforms (Lenis already smooths scroll wheel momentum)
-  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, 56]);
-  const showcaseY = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  // Drive subtle hero parallax on composite transform only without framer-motion bundle weight.
+  useEffect(() => {
+    return subscribeScrollProgress(({ scrollY }) => {
+      const progress = Math.min(1, Math.max(0, scrollY / 800));
+      if (heroTextRef.current) {
+        heroTextRef.current.style.transform = `translate3d(0, ${(progress * 56).toFixed(2)}px, 0)`;
+      }
+      if (showcaseRef.current) {
+        showcaseRef.current.style.transform = `translate3d(0, ${(progress * -40).toFixed(2)}px, 0)`;
+      }
+    });
+  }, []);
 
   // Auto slide interval (paused when hovered or when hero is scrolled out of view)
   useEffect(() => {
@@ -242,9 +252,9 @@ export default function HorizonHero() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8 items-center">
           
           {/* Left Column: Hero Content */}
-          <motion.div 
-            style={{ y: heroTextY }}
-            className="lg:col-span-7"
+          <div 
+            ref={heroTextRef}
+            className="lg:col-span-7 will-change-transform"
           >
             <Reveal className="flex flex-col justify-center space-y-8">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
@@ -289,12 +299,12 @@ export default function HorizonHero() {
                 </a>
               </div>
             </Reveal>
-          </motion.div>
+          </div>
 
           {/* Right Column: Dynamic Project Showcase Deck & Carousel */}
-          <motion.div 
-            style={{ y: showcaseY }}
-            className="lg:col-span-5 space-y-6"
+          <div 
+            ref={showcaseRef}
+            className="lg:col-span-5 space-y-6 will-change-transform"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             onFocus={() => setIsPaused(true)}
@@ -357,36 +367,30 @@ export default function HorizonHero() {
 
               {/* Dynamic Animated Card Content */}
               <div className="relative min-h-42.5 flex flex-col justify-between z-10">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeProject.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wide stitch-btn-glass text-cyan-300">
-                        {activeProject.tag}
-                      </span>
-                      <span className="text-[11px] font-mono text-zinc-400">
-                        {activeProject.spec}
-                      </span>
-                    </div>
+                <div
+                  key={activeProject.id}
+                  className="space-y-3 hero-slide-in"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wide stitch-btn-glass text-cyan-300">
+                      {activeProject.tag}
+                    </span>
+                    <span className="text-[11px] font-mono text-zinc-400">
+                      {activeProject.spec}
+                    </span>
+                  </div>
 
-                    <h3 className="text-xl font-bold text-white tracking-tight hover:text-cyan-300 transition-colors">
-                      <a href="#projects" className="flex items-center gap-2 group">
-                        {activeProject.title}
-                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 text-cyan-400" />
-                      </a>
-                    </h3>
+                  <h2 className="text-xl font-bold text-white tracking-tight hover:text-cyan-300 transition-colors">
+                    <a href="#projects" className="flex items-center gap-2 group">
+                      {activeProject.title}
+                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 text-cyan-400" />
+                    </a>
+                  </h2>
 
-                    <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                      {activeProject.desc}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    {activeProject.desc}
+                  </p>
+                </div>
 
                 <div className="pt-4 mt-2 border-t border-white/10 flex items-center justify-between text-xs">
                   <span className="text-zinc-400 font-mono text-[11px]">
@@ -429,7 +433,7 @@ export default function HorizonHero() {
               </div>
             </Reveal>
 
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

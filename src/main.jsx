@@ -60,8 +60,8 @@ class ErrorBoundary extends Component {
   }
 }
 
-// ponytail: build HTML is a readable snapshot; hydrate only after persisted browser state has a deterministic first render.
-ReactDOM.createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById('root');
+const appTree = (
   <React.StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
@@ -72,5 +72,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </LanguageProvider>
       </BrowserRouter>
     </ErrorBoundary>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);
+
+const canHydrateHome =
+  rootEl &&
+  rootEl.firstElementChild &&
+  (window.location.pathname === '/' || window.location.pathname === '/index.html');
+
+if (canHydrateHome) {
+  for (const el of rootEl.querySelectorAll('[data-ssr-disabled]')) {
+    el.removeAttribute('disabled');
+    el.removeAttribute('data-ssr-disabled');
+  }
+  ReactDOM.hydrateRoot(rootEl, appTree);
+} else if (rootEl) {
+  ReactDOM.createRoot(rootEl).render(appTree);
+}

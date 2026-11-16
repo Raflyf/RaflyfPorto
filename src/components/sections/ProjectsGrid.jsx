@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getProjectsData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Star, ExternalLink } from 'lucide-react';
@@ -16,6 +16,7 @@ const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v2';
 export default function ProjectsGrid() {
   const { language, t } = useLanguage();
   const [filter, setFilter] = useState('all');
+  const sectionRef = useRef(null);
 
   const projects = getProjectsData(language);
 
@@ -98,7 +99,32 @@ export default function ProjectsGrid() {
       }
     }
 
-    fetchStars();
+    let started = false;
+    const triggerFetch = () => {
+      if (started) return;
+      started = true;
+      fetchStars();
+    };
+
+    const el = sectionRef.current;
+    if (el && typeof IntersectionObserver !== 'undefined') {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer.disconnect();
+            triggerFetch();
+          }
+        },
+        { rootMargin: '600px 0px' }
+      );
+      observer.observe(el);
+      return () => {
+        isMounted = false;
+        observer.disconnect();
+      };
+    }
+
+    triggerFetch();
     return () => { isMounted = false; };
   }, []);
 
@@ -113,7 +139,7 @@ export default function ProjectsGrid() {
   };
 
   return (
-    <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
+    <section ref={sectionRef} id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <Reveal className="text-center space-y-4 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>

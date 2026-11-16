@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, MessageSquare, Copy, Check, Send, AlertCircle, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
@@ -323,40 +322,35 @@ export default function ContactSection() {
             </div>
 
             {/* Status Alert Banner */}
-            <AnimatePresence>
-              {status.message && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className={`p-4 rounded-2xl border text-xs sm:text-sm flex flex-col gap-2 ${
-                    status.type === 'success' 
-                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' 
-                      : 'bg-red-500/15 border-red-500/40 text-red-200'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    {status.type === 'success' ? (
-                      <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    )}
-                    <span className="leading-relaxed">{status.message}</span>
-                  </div>
-
-                  {status.waUrl && (
-                    <a 
-                      href={status.waUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 font-semibold text-white underline underline-offset-4 hover:text-cyan-300 transition-colors ml-7 text-xs"
-                    >
-                      {language === 'id' ? 'Buka Pesan di WhatsApp →' : 'Open Message in WhatsApp →'}
-                    </a>
+            {status.message && (
+              <div
+                className={`p-4 rounded-2xl border text-xs sm:text-sm flex flex-col gap-2 animate-fade-in ${
+                  status.type === 'success' 
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' 
+                    : 'bg-red-500/15 border-red-500/40 text-red-200'
+                }`}
+              >
+                <div className="flex items-start gap-2.5">
+                  {status.type === 'success' ? (
+                    <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <span className="leading-relaxed">{status.message}</span>
+                </div>
+
+                {status.waUrl && (
+                  <a 
+                    href={status.waUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 font-semibold text-white underline underline-offset-4 hover:text-cyan-300 transition-colors ml-7 text-xs"
+                  >
+                    {language === 'id' ? 'Buka Pesan di WhatsApp →' : 'Open Message in WhatsApp →'}
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

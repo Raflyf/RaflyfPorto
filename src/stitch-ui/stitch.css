@@ -615,6 +615,8 @@ button.stitch-btn-glass:active,
 
 .section-contain {
   contain: style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 650px;
 }
 
 /* Optimasi GPU Mobile (<= 768px): seluruh kartu, nav, & dropdown menggunakan blur tipis seragam (8px) */

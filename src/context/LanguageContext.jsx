@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { telemetry } from '../lib/telemetry';
 
 export const DICTIONARY = {
@@ -517,17 +517,26 @@ export const DICTIONARY = {
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguageState] = useState(() => {
-    if (typeof window === 'undefined') return 'id';
-    const saved = localStorage.getItem('portfolio_lang');
-    return saved === 'en' || saved === 'id' ? saved : 'id';
-  });
+  const hasInitializedRef = useRef(false);
+  const [language, setLanguageState] = useState('id');
 
   useEffect(() => {
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      try {
+        const saved = localStorage.getItem('portfolio_lang');
+        if (saved === 'en') {
+          setLanguageState('en');
+          return;
+        }
+      } catch {}
+    }
     if (typeof document !== 'undefined') {
       document.documentElement.lang = language;
     }
-    localStorage.setItem('portfolio_lang', language);
+    try {
+      localStorage.setItem('portfolio_lang', language);
+    } catch {}
   }, [language]);
 
   const setLanguage = (lang) => {

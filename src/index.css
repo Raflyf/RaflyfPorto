@@ -246,6 +246,8 @@
 /* High-Performance Rendering & Containment (Tanpa contain: layout agar tidak menjebak position: fixed modal terhadap tinggi section) */
 .section-contain {
   contain: style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 650px;
 }
 
 /* Light-mode liquid glass overrides (white translucent, dark text) */
@@ -477,6 +479,21 @@
 
 .glass-reveal {
   animation: glass-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero-slide-in {
+  from {
+    opacity: 0;
+    transform: translate3d(20px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.hero-slide-in {
+  animation: hero-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Modal spring entrance: scale + translate saja, TANPA opacity (opacity

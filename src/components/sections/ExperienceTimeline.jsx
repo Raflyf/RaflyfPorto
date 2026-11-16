@@ -1,18 +1,87 @@
-import React, { useRef, useMemo } from 'react';
-import { motion, useScroll } from 'framer-motion';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { getTimelineData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { Briefcase, GraduationCap } from 'lucide-react';
 import Reveal from '../ui/Reveal.jsx';
+import { subscribeScrollProgress } from '../../lib/scroll-progress.js';
+
+function TimelineProgressBeam({ containerRef }) {
+  const beamRef = useRef(null);
+  const boundsRef = useRef({ top: 0, height: 1, winH: 0 });
+
+  useEffect(() => {
+    const measureBounds = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      boundsRef.current = {
+        top: rect.top + (window.scrollY || 0),
+        height: Math.max(1, rect.height),
+        winH: window.innerHeight || 0,
+      };
+    };
+
+    const updateBeam = (scrollY) => {
+      if (!beamRef.current) return;
+      const { top, height, winH } = boundsRef.current;
+      const progress = Math.min(1, Math.max(0, (scrollY + winH * 0.5 - top) / height));
+      beamRef.current.style.transform = `scaleY(${progress})`;
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      measureBounds();
+      updateBeam(window.scrollY || 0);
+    });
+
+    const ro = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          measureBounds();
+          updateBeam(window.scrollY || 0);
+        })
+      : null;
+    if (ro && document.body) ro.observe(document.body);
+
+    const unsub = subscribeScrollProgress(({ scrollY }) => updateBeam(scrollY));
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro?.disconnect();
+      unsub();
+    };
+  }, [containerRef]);
+
+  return (
+    <div
+      ref={beamRef}
+      style={{ transform: 'scaleY(0)' }}
+      className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-0.5 bg-linear-to-b from-cyan-400 via-indigo-500 to-emerald-400 origin-top transform sm:-translate-x-1/2 shadow-[0_0_12px_rgba(34,211,238,0.8)] z-0"
+    />
+  );
+}
 
 export default function ExperienceTimeline() {
   const { language, t } = useLanguage();
   const timelineData = useMemo(() => getTimelineData(language), [language]);
   const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"]
-  });
+  const [beamActive, setBeamActive] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setBeamActive(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setBeamActive(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section id="timeline" ref={containerRef} className="relative px-4 sm:px-6 w-full max-w-4xl mx-auto pt-24 pb-24">
@@ -32,11 +101,8 @@ export default function ExperienceTimeline() {
         {/* Base Timeline Line (Gray) */}
         <div className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 transform sm:-translate-x-1/2" />
 
-        {/* Scroll-Driven Light Beam Line */}
-        <motion.div 
-          style={{ scaleY: scrollYProgress }}
-          className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-0.5 bg-linear-to-b from-cyan-400 via-indigo-500 to-emerald-400 origin-top transform sm:-translate-x-1/2 shadow-[0_0_12px_rgba(34,211,238,0.8)] z-0"
-        />
+        {/* Scroll-Driven Light Beam Line (mounted only near viewport to avoid mount-time offsetParent reflow) */}
+        {beamActive && <TimelineProgressBeam containerRef={containerRef} />}
 
         <div className="space-y-12">
           {timelineData.map((item, index) => {

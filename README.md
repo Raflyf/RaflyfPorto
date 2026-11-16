@@ -2,7 +2,7 @@
 
 Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** - Sarjana Komputer (S1 Informatika, Universitas Bina Sarana Informatika), Analis Program Terstandar BNSP, dan Software Engineer yang berfokus pada riset *Natural Language Processing* (NLP), *Machine Learning*, arsitektur backend, dan rekayasa web modern.
 
-Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, **Framer Motion**, dan **Lenis Scroll**, didukung **Vercel Serverless Functions** serta **Supabase PostgreSQL**. Desainnya menekankan aksesibilitas WCAG 2.2 AA, efisiensi bundle melalui *lazy-loading* dan *code-splitting*, serta arsitektur keamanan *fail-closed* dengan *Row Level Security* (RLS).
+Aplikasi ini dibangun dengan **React 19**, **Vite**, **Tailwind CSS v4**, dan **Lenis Scroll** (*on-demand*), didukung **Vercel Serverless Functions** serta **Supabase PostgreSQL**. Desainnya menekankan aksesibilitas WCAG 2.2 AA, efisiensi bundle melalui *lazy-loading* dan *code-splitting*, serta arsitektur keamanan *fail-closed* dengan *Row Level Security* (RLS).
 
 ---
 
@@ -99,7 +99,7 @@ npm run preview
 
 Situs utama: https://raflyf.vercel.app/. Domain sebelumnya dipertahankan sebagai redirect permanen ke path yang sama, bukan diputus atau diarahkan semua ke homepage. File verifikasi Google dikecualikan dari redirect agar kedua property tetap bisa diverifikasi.
 
-- `npm run build` membangun Vite ke `dist/`, lalu merender komponen portfolio asli ke HTML. Pengunjung dan crawler memperoleh profil, H1, proyek, dan tautan sebelum JavaScript berjalan. Client saat ini me-mount ulang snapshot yang sama; kontrol input dinonaktifkan sampai React siap supaya isian pengguna tidak hilang. Hydration ditunda sampai state browser tersimpan memiliki render awal deterministik.
+- `npm run build` membangun Vite ke `dist/`, lalu merender aplikasi portofolio ke HTML statis (`renderToString`). Pengunjung dan crawler memperoleh profil, H1, proyek, dan tautan sebelum JavaScript berjalan; kontrol input/tombol ditandai `data-ssr-disabled` dan `disabled` pada snapshot statis, lalu atribut sementara tersebut dihapus sebelum React menjalankan `hydrateRoot` di `/`. Status bahasa tersimpan (`localStorage`), `TerminalAI`, `Lenis`, `/api/github-stars`, serta telemetri awal ditunda secara *lazy*/*deferred* agar *first paint*, LCP, aksesibilitas, dan interaksi awal tetap optimal tanpa *hydration mismatch* maupun *forced reflow*.
 - `public/robots.txt`, `public/sitemap.xml`, dan file verifikasi Google merupakan berkas yang diterbitkan. Salinan root robots/sitemap dipertahankan dan diuji agar tidak menyimpang.
 - Sitemap memuat homepage dan `/contoh-portfolio-react-tailwind`, bukan dashboard atau alias duplikat. Tanggal `lastmod` yang tidak dapat dipastikan dihapus, bukan diganti pada setiap deploy.
 - Halaman studi kasus berisi struktur, screenshot desktop/mobile, keputusan teknis, demo, dan repo. Source code ini merupakan portfolio aktif, bukan janji template satu klik.

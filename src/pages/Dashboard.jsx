@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background.jsx';
 import { telemetry } from '../lib/telemetry';

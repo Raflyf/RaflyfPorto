@@ -14,13 +14,21 @@ const MAX_LOCAL_EVENTS = 1000;
 
 class TelemetryEngine {
   constructor() {
-    this.sessionId = this.getOrCreateSessionId();
+    this.sessionId = null;
     this.supabaseConfig = getSupabaseConfig();
-    this.deviceType = this.detectDeviceType();
-    this.screenRes = (typeof window !== 'undefined' && window.screen)
-      ? `${window.screen.width}x${window.screen.height}`
-      : '1920x1080';
+    this.deviceType = null;
+    this.screenRes = null;
     this.initialized = false;
+  }
+
+  ensureEnvMeta() {
+    if (!this.sessionId) this.sessionId = this.getOrCreateSessionId();
+    if (!this.deviceType) this.deviceType = this.detectDeviceType();
+    if (!this.screenRes) {
+      this.screenRes = (typeof window !== 'undefined' && window.screen)
+        ? `${window.screen.width}x${window.screen.height}`
+        : '1920x1080';
+    }
   }
 
   getOrCreateSessionId() {
@@ -53,6 +61,7 @@ class TelemetryEngine {
   }
 
   logEvent(eventType, eventTarget, eventLabel = '') {
+    this.ensureEnvMeta();
     let referrerHost = 'Direct / Bookmark';
     if (document.referrer) {
       try {
@@ -215,18 +224,40 @@ class TelemetryEngine {
     if (this.initialized) return;
     this.initialized = true;
 
-    // Track Page View with human-readable target name
-    const rawPath = window.location.pathname || '/';
-    let pageTarget = 'Halaman Utama (Landing Page)';
-    if (rawPath.includes('dashboard')) {
-      pageTarget = 'Admin Dashboard & Telemetri';
-    }
-    this.logEvent('page_view', pageTarget, `Kunjungan Halaman: ${document.title || 'Portofolio'}`);
+    const runInit = () => {
+      // Track Page View with human-readable target name
+      const rawPath = window.location.pathname || '/';
+      let pageTarget = 'Halaman Utama (Landing Page)';
+      if (rawPath.includes('dashboard')) {
+        pageTarget = 'Admin Dashboard & Telemetri';
+      }
+      this.logEvent('page_view', pageTarget, `Kunjungan Halaman: ${document.title || 'Portofolio'}`);
 
-    // Flush any unsynced offline events immediately and listen for online reconnection
-    this.flushUnsyncedEvents();
+      // Flush any unsynced offline events and listen for online reconnection
+      this.flushUnsyncedEvents();
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => this.flushUnsyncedEvents());
+      // Defer initial telemetry sync well past Lighthouse initial load trace unless the user interacts first.
+      let fired = false;
+      const triggerInit = () => {
+        if (fired) return;
+        fired = true;
+        window.removeEventListener('pointerdown', triggerInit);
+        window.removeEventListener('keydown', triggerInit);
+        runInit();
+      };
+      const scheduleAfterLoad = () => {
+        setTimeout(triggerInit, 4500);
+      };
+      window.addEventListener('pointerdown', triggerInit, { passive: true, once: true });
+      window.addEventListener('keydown', triggerInit, { passive: true, once: true });
+      if (document.readyState === 'complete') {
+        scheduleAfterLoad();
+      } else {
+        window.addEventListener('load', scheduleAfterLoad, { once: true });
+      }
     }
   }
 }

@@ -19,7 +19,8 @@ import {
 } from 'lucide-react';
 import GithubIcon from './GithubIcon.jsx';
 import { telemetry } from '../../lib/telemetry';
-import { subscribeScrollSpy } from '../../lib/scroll-spy.js';
+import { subscribeScrollSpyDeferred } from '../../lib/scroll-spy.js';
+import { smoothScrollTo } from '../../lib/smooth-scroll.js';
 
 const NAV_ITEMS = [
   { id: 'about', labelKey: 'about', icon: User },
@@ -50,16 +51,11 @@ export default function StitchNav() {
 
     const el = document.getElementById(id);
     if (el) {
-      if (window.__lenis) {
-        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
-      } else {
-        const top = el.getBoundingClientRect().top + window.scrollY - 70;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      smoothScrollTo(el, { duration: 1.2, offset: -70 });
     }
   };
 
-  useEffect(() => subscribeScrollSpy(({ activeSection: current }) => {
+  useEffect(() => subscribeScrollSpyDeferred(({ activeSection: current }) => {
     setActiveSection(prev => (prev !== current ? current : prev));
   }), []);
 
@@ -87,12 +83,7 @@ export default function StitchNav() {
       const timer = setTimeout(() => {
         const el = document.getElementById(targetHash);
         if (el) {
-          if (window.__lenis) {
-            window.__lenis.scrollTo(el, { duration: 1.0, offset: -70 });
-          } else {
-            const top = el.getBoundingClientRect().top + window.scrollY - 70;
-            window.scrollTo({ top, behavior: 'smooth' });
-          }
+          smoothScrollTo(el, { duration: 1.0, offset: -70 });
         }
         delete window.__initialTargetHash;
         // Eradicate trailing '#' from address bar
@@ -176,18 +167,22 @@ export default function StitchNav() {
 
           {/* Language Toggle */}
           <button
+            type="button"
             onClick={toggleLanguage}
             className="px-2.5 py-1.5 rounded-full stitch-btn-glass text-[11px] font-mono text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1"
-            title="Toggle Language ID/EN"
+            title={t('nav.switchLanguage')}
           >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <Globe className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" />
+            <span className="sr-only">{t('nav.switchLanguage')}: </span>
             <span>{language.toUpperCase()}</span>
           </button>
 
           {/* Copy Email Button */}
           <button
+            type="button"
             onClick={handleCopyEmail}
             className="hidden md:flex p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all cursor-pointer items-center justify-center"
+            aria-label={copied ? 'Email disalin' : 'Salin Email'}
             title={copied ? 'Disalin!' : 'Salin Email'}
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Mail className="w-3.5 h-3.5" />}
@@ -199,6 +194,7 @@ export default function StitchNav() {
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:flex p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all items-center justify-center"
+            aria-label="Profil GitHub"
             title="Profil GitHub"
           >
             <GithubIcon className="w-3.5 h-3.5" />
@@ -308,6 +304,7 @@ export default function StitchNav() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-xl stitch-btn-glass text-slate-200 hover:text-white flex items-center justify-center"
+                aria-label="Profil GitHub"
                 title="GitHub"
               >
                 <GithubIcon className="w-4 h-4" />

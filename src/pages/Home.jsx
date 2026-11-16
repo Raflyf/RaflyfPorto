@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 import { telemetry } from '../lib/telemetry';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background';
 import HorizonHero from '../components/ui/horizon-hero';
 import ScrollStoryline from '../components/ui/scroll-storyline';
-import TerminalAI from '../components/terminal/TerminalAI';
+import DeferredTerminalAI from '../components/terminal/DeferredTerminalAI';
 import AboutSection from '../components/sections/AboutSection';
 import SkillsBento from '../components/sections/SkillsBento';
 import ProjectsGrid from '../components/sections/ProjectsGrid';
@@ -58,7 +57,7 @@ export default function Home() {
           </Reveal>
           
           <Reveal y={30} duration={0.7} amount={0.15} >
-            <TerminalAI />
+            <DeferredTerminalAI />
           </Reveal>
         </section>
 

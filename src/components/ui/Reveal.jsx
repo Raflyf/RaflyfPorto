@@ -19,19 +19,15 @@ function getSharedObserver() {
 
   sharedObserver = new IntersectionObserver(
     (entries) => {
-      const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+      const actions = [];
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const el = entry.target;
 
         if (!entry.isIntersecting || entry.intersectionRatio <= 0) {
-          el.classList.remove('revealed');
-          if (entry.boundingClientRect.top < 0) {
-            el.classList.add('reveal-from-top');
-          } else {
-            el.classList.remove('reveal-from-top');
-          }
+          actions.push({ el, reveal: false, fromTop: entry.boundingClientRect.top < 0 });
         } else {
+          const vh = entry.rootBounds ? entry.rootBounds.height : 800;
           const visiblePx = entry.intersectionRect ? entry.intersectionRect.height : 0;
           const isFooterItem = el.closest && Boolean(el.closest('footer'));
           if (
@@ -40,8 +36,18 @@ function getSharedObserver() {
             visiblePx >= 64 ||
             entry.boundingClientRect.height > vh * 0.5
           ) {
-            el.classList.add('revealed');
+            actions.push({ el, reveal: true });
           }
+        }
+      }
+
+      for (let i = 0; i < actions.length; i++) {
+        const { el, reveal, fromTop } = actions[i];
+        if (reveal) {
+          el.classList.add('revealed');
+        } else {
+          el.classList.remove('revealed');
+          el.classList.toggle('reveal-from-top', fromTop);
         }
       }
     },

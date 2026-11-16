@@ -151,7 +151,8 @@ const CustomSelectEffort = ({ value, onChange }) => {
         onClick={() => setIsOpen(prev => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`stitch-btn-glass flex items-center justify-between gap-2 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
+        aria-label={`Reasoning Effort: ${selected.label}`}
+        className={`stitch-btn-glass flex items-center justify-between gap-2 px-3 py-1 min-h-6 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
           isOpen 
             ? 'border-cyan-400 text-cyan-300 ring-1 ring-cyan-400/40' 
             : 'text-zinc-200 hover:text-white'
@@ -523,6 +524,13 @@ export default function TerminalAI({ onClose } = {}) {
   const phaseTimersRef = useRef([]);
 
   useEffect(() => {
+    if (typeof document !== 'undefined' && document.head && !document.getElementById('plus-jakarta-font')) {
+      const link = document.createElement('link');
+      link.id = 'plus-jakarta-font';
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
+      document.head.appendChild(link);
+    }
     return () => {
       phaseTimersRef.current.forEach(t => clearTimeout(t));
       phaseTimersRef.current = [];
@@ -1205,7 +1213,7 @@ export default function TerminalAI({ onClose } = {}) {
         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2 border-b border-white/10 stitch-terminal-header shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             {/* macOS Style Window Action Controls (Top-Left Standard Alignment) */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-0.5 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1216,33 +1224,39 @@ export default function TerminalAI({ onClose } = {}) {
                     handleNewChat();
                   }
                 }}
-                className="w-3 h-3 rounded-full bg-rose-500/90 hover:bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                className="stitch-raw-btn w-6 h-6 rounded-full flex items-center justify-center transition cursor-pointer group/dot focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                 title={isTerminalPopupOpen ? "Tutup Modal Terminal" : "Bersihkan Percakapan / Reset"}
                 aria-label={isTerminalPopupOpen ? "Tutup Modal" : "Reset Percakapan"}
               >
-                <X className="w-2 h-2 text-rose-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
+                <span className="w-3 h-3 rounded-full bg-rose-500/90 group-hover/dot:bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)] flex items-center justify-center transition">
+                  <X className="w-2 h-2 text-rose-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => setShowCheckpointModal(true)}
-                className="w-3 h-3 rounded-full bg-amber-400/90 hover:bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                className="stitch-raw-btn w-6 h-6 rounded-full flex items-center justify-center transition cursor-pointer group/dot focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                 title="Buka Checkpoint & Snapshot Sesi"
                 aria-label="Checkpoint Sesi"
               >
-                <span className="w-1.5 h-0.5 bg-amber-950 opacity-0 group-hover/dot:opacity-100 transition-opacity" />
+                <span className="w-3 h-3 rounded-full bg-amber-400/90 group-hover/dot:bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)] flex items-center justify-center transition">
+                  <span className="w-1.5 h-0.5 bg-amber-950 opacity-0 group-hover/dot:opacity-100 transition-opacity" />
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsTerminalPopupOpen(!isTerminalPopupOpen)}
-                className="w-3 h-3 rounded-full bg-emerald-400/90 hover:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                className="stitch-raw-btn w-6 h-6 rounded-full flex items-center justify-center transition cursor-pointer group/dot focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                 title={isTerminalPopupOpen ? "Kembalikan Ukuran Normal" : "Buka Mode Pop-up Layar Penuh"}
                 aria-label="Toggle Fullscreen Pop-up"
               >
-                <Maximize2 className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
+                <span className="w-3 h-3 rounded-full bg-emerald-400/90 group-hover/dot:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)] flex items-center justify-center transition">
+                  <Maximize2 className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
+                </span>
               </button>
             </div>
 
-            <div className="h-3.5 w-px bg-white/15 mx-0.5 shrink-0 hidden xs:block" />
+            <div className="h-3.5 w-px bg-white/15 mx-0.5 shrink-0 hidden sm:block" />
 
             <div className="flex items-center gap-2 min-w-0">
               <Terminal className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
@@ -1288,28 +1302,33 @@ export default function TerminalAI({ onClose } = {}) {
             <button 
               type="button"
               onClick={() => setShowHistoryModal(true)} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-[11px] shrink-0 cursor-pointer"
+              aria-label="Riwayat Percakapan"
+              title="Riwayat Percakapan"
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 min-h-6 text-[11px] shrink-0 cursor-pointer"
             >
               <Clock className="w-3 h-3 text-cyan-400" /> 
-              <span className="hidden xs:inline">Riwayat</span>
+              <span className="hidden sm:inline">Riwayat</span>
             </button>
             <button 
               type="button"
               onClick={() => setShowCheckpointModal(true)} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-amber-300 text-[11px] shrink-0 cursor-pointer" 
+              aria-label="Checkpoint Sesi"
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 min-h-6 text-amber-300 text-[11px] shrink-0 cursor-pointer" 
               title="Pulihkan / Rollback ke Checkpoint"
             >
               <RotateCcw className="w-3 h-3 text-amber-400" /> 
-              <span className="hidden xs:inline">Checkpoint</span>
+              <span className="hidden sm:inline">Checkpoint</span>
               {checkpoints.length > 0 && <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{checkpoints.length}</span>}
             </button>
             <button 
               type="button"
               onClick={handleNewChat} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-emerald-300 hover:text-emerald-200 text-[11px] shrink-0 cursor-pointer"
+              aria-label="Percakapan Baru"
+              title="Percakapan Baru"
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 min-h-6 text-emerald-300 hover:text-emerald-200 text-[11px] shrink-0 cursor-pointer"
             >
               <Plus className="w-3 h-3 text-emerald-400" /> 
-              <span className="hidden xs:inline">Baru</span>
+              <span className="hidden sm:inline">Baru</span>
             </button>
             
             <div className="hidden sm:block h-3.5 w-px bg-white/20 mx-0.5 shrink-0"></div>
@@ -1336,15 +1355,17 @@ export default function TerminalAI({ onClose } = {}) {
         {["skills", "projects", "certifs", "benchmarks", "models", "ai-status", "about", "contact"].map(cmd => (
           <button 
             key={cmd}
+            type="button"
             onClick={() => handleShortcutClick(`/${cmd}`)}
-            className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 hover:border-white/25 hover:shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-all shrink-0 cursor-pointer"
+            className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 hover:border-white/25 hover:shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-all shrink-0 cursor-pointer"
           >
             {cmd}
           </button>
         ))}
         <button 
+          type="button"
           onClick={() => setMessages([{ role: 'system', content: 'Console cleared.', time: getCurrentTime() }])}
-          className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/25 hover:border-rose-500/40 hover:shadow-[0_2px_8px_rgba(244,63,94,0.2)] transition-all ml-auto shrink-0 cursor-pointer"
+          className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/25 hover:border-rose-500/40 hover:shadow-[0_2px_8px_rgba(244,63,94,0.2)] transition-all ml-auto shrink-0 cursor-pointer"
         >
           clear
         </button>
@@ -1588,7 +1609,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <span>Hapus Semua</span>
                   </button>
                 )}
-                <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
+                <button type="button" onClick={() => setShowHistoryModal(false)} aria-label="Tutup Riwayat Percakapan" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
                   <X className="w-4 h-4 text-zinc-400 hover:text-white" />
                 </button>
               </div>
@@ -1645,6 +1666,7 @@ export default function TerminalAI({ onClose } = {}) {
                    <button
                      type="button"
                      onClick={(e) => handleDeleteHistoryItem(hist.id, e)}
+                     aria-label="Hapus sesi ini"
                      title="Hapus sesi ini"
                      className="p-2.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 text-red-300 hover:text-red-100 border border-red-500/30 hover:border-red-500/50 transition opacity-85 group-hover:opacity-100 cursor-pointer shrink-0 ml-2"
                    >
@@ -1703,7 +1725,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <span>Hapus Semua</span>
                   </button>
                 )}
-                <button onClick={() => setShowCheckpointModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
+                <button type="button" onClick={() => setShowCheckpointModal(false)} aria-label="Tutup Checkpoint" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
                   <X className="w-4 h-4 text-zinc-400 hover:text-white" />
                 </button>
               </div>
@@ -1758,6 +1780,7 @@ export default function TerminalAI({ onClose } = {}) {
                           return updated;
                         });
                       }}
+                      aria-label="Hapus checkpoint ini"
                       title="Hapus checkpoint ini"
                       className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-300 border border-red-500/20 transition cursor-pointer"
                     >
@@ -1790,8 +1813,10 @@ export default function TerminalAI({ onClose } = {}) {
         >
           <div className="relative max-w-4xl max-h-[85vh] p-3 liquid-glass-strong rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <button 
+              type="button"
               onClick={() => setSelectedImagePreview(null)}
               className="absolute top-3 right-3 p-2 rounded-full stitch-btn-glass text-white transition cursor-pointer z-10"
+              aria-label="Tutup Preview Gambar"
               title="Tutup Preview"
             >
               <X className="w-4 h-4" />
@@ -1906,6 +1931,7 @@ export default function TerminalAI({ onClose } = {}) {
                 <button
                   type="button"
                   onClick={cancelGeneration}
+                  aria-label="Batalkan pengiriman"
                   title="Batalkan pengiriman (Cancel)"
                   className="w-8 h-8 rounded-full bg-linear-to-r from-red-500 to-rose-600 text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center shrink-0"
                 >
@@ -1915,6 +1941,8 @@ export default function TerminalAI({ onClose } = {}) {
                 <button
                   type="submit"
                   disabled={(!input.trim() && attachments.length === 0) || isLoading}
+                  aria-label="Kirim pesan"
+                  title="Kirim pesan"
                   className="w-8 h-8 rounded-full stitch-btn-glass text-cyan-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shrink-0"
                 >
                   <Send className="w-3.5 h-3.5" />

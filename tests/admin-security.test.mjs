@@ -406,7 +406,8 @@ function dashboardContext() {
     ['portfolio_dashboard_cached_memories', '[{"id":"private"}]'],
     ['portfolio_telemetry_events', 'visitor-local'],
   ]);
-  const session = new Map([['dash_admin_auth_session', JSON.stringify({ auth: true, session_token: token, expires_at: Date.parse('2026-11-11T11:00:00Z') })]]);
+  const futureExpiry = Date.now() + 86400000;
+  const session = new Map([['dash_admin_auth_session', JSON.stringify({ auth: true, session_token: token, expires_at: futureExpiry })]]);
   const states = {};
   const context = {
     localStorage: { getItem: key => local.get(key) ?? null, removeItem: key => local.delete(key), setItem: (key, value) => local.set(key, value) },
@@ -486,7 +487,7 @@ test('dashboard login sends raw PIN over same-origin POST and stores validated e
   let posted;
   ui.context.fetch = async (url, init) => {
     posted = JSON.parse(init.body);
-    return { ok: true, status: 200, async json() { return { verified: true, session_token: token, expires_at: Date.parse('2026-11-11T11:00:00Z') }; } };
+    return { ok: true, status: 200, async json() { return { verified: true, session_token: token, expires_at: Date.now() + 86400000 }; } };
   };
   const login = dashboardFunction('handleLogin', '  // 4. Change PIN Handler', ui.context);
   await login({ preventDefault() {} });
